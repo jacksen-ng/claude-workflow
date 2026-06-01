@@ -8,7 +8,7 @@
     {
       "name": "harness-kit",
       "source": "./plugins/harness-kit",
-      "description": "Closed-loop dev workflow: harness orchestrator + project bootstrapper + scaffold / vibe-coding / git-commit skills."
+      "description": "Closed-loop dev workflow: project bootstrapper (stamps a local harness-engineering orchestrator + domain skills into each repo) + scaffold / vibe-coding / git-commit skills."
     }
   ]
 }

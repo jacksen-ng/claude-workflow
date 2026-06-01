@@ -6,7 +6,7 @@ description: <Surface> domain context for <repo-name>. Load when working on <con
 # <prefix>-<surface>
 
 > **Snapshot — verify before trusting.** Paths/symbols below are point-in-time. Per the
-> `harness` Ground phase, Read/Grep the live file before editing or citing it; if it has
+> `harness-engineering` Ground phase, Read/Grep the live file before editing or citing it; if it has
 > drifted, the **code wins** — proceed on the code and update this skill.
 > **Ground-truth anchors:** <the real entry-point paths a task on this surface will touch —
 > e.g. routes `src/api/routes/*.py` · components `src/components/{a,b}/` · config `src/core/config.py`.

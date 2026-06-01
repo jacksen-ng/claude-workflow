@@ -5,7 +5,7 @@ Thin context guide for `<repo-name>`. Holds only the **always-on hard rules** an
 `.claude/skills/` (progressive disclosure — loaded only when a task hits that surface,
 keeping this file small as the project grows).
 
-**Start non-trivial work through the `harness` skill** — it runs the
+**Start non-trivial work through the `harness-engineering` skill** — it runs the
 intake → plan → dispatch → ground → implement → verify → gate → approve loop and
 routes to the right domain skill(s).
 

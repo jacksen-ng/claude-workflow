@@ -1,0 +1,85 @@
+---
+name: harness-engineering
+description: Orchestration entry point for <repo-name>. Use this skill at the START of any non-trivial feature request, change, or multi-step task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a closed-loop workflow — intake guardrails, planning with a sprint contract, on-demand loading of the right domain skill(s), grounding context against live code, implementation, verification, and a quality/security gate. Routes to the <prefix>-* domain skills and reuses /code-review, /security-review, /verify, /run, /git-commit, /vibe-coding, /dev-init.
+---
+
+# harness-engineering — <repo-name> Orchestrator
+
+The harness around long-running work in `<repo-name>`. Detailed domain context lives in the
+domain skills, loaded on demand (progressive disclosure), so CLAUDE.md stays thin. This file
+holds the workflow, the routing table, and the always-on guardrails.
+
+Guiding idea: the harness is a first-class engineering artifact. Every phase encodes an
+assumption about what the model should NOT do unsupervised — task scoping, self-evaluation,
+irreversible actions. Prune steps that stop earning their keep.
+
+**Ground before trust (load-bearing).** The domain skills are a *map* — intent, decisions, a
+point-in-time snapshot of structure. The *code* is the territory. Paths/names/signatures in any
+skill MAY be stale. Whenever a task depends on a specific piece of code, verify it against the
+live repo before acting (Phase 4). If reality contradicts a skill, the **code wins** — proceed
+on the code and fix the skill.
+
+**Where the rules come from.**
+- User global hard rules (always loaded from `~/.claude/CLAUDE.md`): any delete or git op needs
+  explicit per-action approval; reply language; privacy paths.
+- This repo's `CLAUDE.md`: the always-on section + the routing table (mirrored below).
+
+## The closed loop
+
+Run these phases in order. Do not skip the gate phases (6–8) on any change that touches code.
+
+### Phase 1 — Intake (guardrail checklist)
+One line each: (1) **Scope** — is the request aligned with this repo's goal / in-scope
+constraints? If it drifts, STOP and flag. (2) **Open decisions** — does it touch a question
+with >1 defensible answer? Present 2–3 options and WAIT. (3) **Irreversible** — git or
+delete/overwrite? Mark "requires explicit approval" now (per-action). (4) **Project red lines** —
+<list this repo's always-on red lines, or "none beyond the global rules">.
+
+### Phase 2 — Plan (sprint contract)
+Decompose into the smallest shippable slices (one feature per slice). Write 2–4 testable success
+criteria. Confirm before coding when the design has >1 defensible answer.
+
+### Phase 3 — Dispatch (load domain context on demand)
+Load only the domain skill(s) the task hits (see Routing table). Don't pull all context for a
+localized change. When unsure, load one and expand. If `.claude/agents/` has custom agents,
+dispatch substantial sub-tasks to them.
+
+### Phase 4 — Ground (verify context against live code)
+Only when the task depends on specific code. Narrow ("changing this one file") → `Read` it first.
+Broad ("where is X?") → spawn **Explore**, starting from the skill's Ground-truth anchors.
+Uncertain a symbol exists → `Grep`. **Drift:** code wins — proceed on the code, note it, and
+update the stale skill's SKILL.md (a doc fix, no approval needed; do NOT also commit it).
+
+### Phase 5 — Implement
+Follow the repo's conventions (CLAUDE.md / domain skill / surrounding code). Match existing style.
+Preserve architecture — no opportunistic refactors; propose those separately. Fall back to
+`/vibe-coding` defaults when conventions aren't stated.
+
+### Phase 6 — Verify (separate generation from evaluation)
+Don't let the context that wrote the code judge it done. Run `/verify` or `/run`, or the tests.
+Report failures with output; never claim verified without running something.
+
+### Phase 7 — Quality & Security gate
+In order: `/code-review` (correctness + reuse) → `/security-review` (secrets discipline: mask all
+but last 4, even at DEBUG) → if infra files changed, lint them (in a container, not host installs).
+Re-confirm the Phase-1 red lines held in the actual diff.
+
+### Phase 8 — Report & approval
+Summarize what changed and what was verified (faithfully; skipped steps stated as skipped). For
+anything marked irreversible in Phase 1, STOP and ask for explicit approval before executing.
+Use `/git-commit` only after approval.
+
+## Routing table
+
+| Task surface | Load skill | Examples |
+|---|---|---|
+| <surface 1> | **<prefix>-<surface1>** | <concrete examples> |
+| <surface 2> | **<prefix>-<surface2>** | <concrete examples> |
+
+Cross-cutting tasks load multiple. Custom agents available to dispatch: <list from
+`.claude/agents/`, or "none">.
+
+## What this skill does NOT do
+It sequences existing skills (`/code-review`, `/security-review`, `/verify`, `/run`,
+`/git-commit`, `/vibe-coding`, `/dev-init`) — it does not reimplement them. Keep it an
+orchestration contract; prune a phase if it stops adding value.
