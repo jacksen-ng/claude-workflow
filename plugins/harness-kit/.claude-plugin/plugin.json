@@ -1,0 +1,18 @@
+{
+  "name": "harness-kit",
+  "version": "0.1.0",
+  "description": "Jacksen's personal closed-loop dev workflow: a generic harness orchestrator, a project bootstrapper, plus scaffold / vibe-coding / git-commit skills.",
+  "author": {
+    "name": "jacksen-ng"
+  },
+  "homepage": "https://github.com/jacksen-ng/claude-workflow",
+  "repository": "https://github.com/jacksen-ng/claude-workflow",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "harness",
+    "orchestration",
+    "scaffold",
+    "bootstrap"
+  ]
+}

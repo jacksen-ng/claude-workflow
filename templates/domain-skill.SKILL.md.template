@@ -1,0 +1,37 @@
+---
+name: <prefix>-<surface>
+description: <Surface> domain context for <repo-name>. Load when working on <concrete triggers — name the files, features, and subsystems that should pull this skill in>. Covers <the stack, the key abstractions, and the locked decisions for this surface>.
+---
+
+# <prefix>-<surface>
+
+> **Snapshot — verify before trusting.** Paths/symbols below are point-in-time. Per the
+> `harness` Ground phase, Read/Grep the live file before editing or citing it; if it has
+> drifted, the **code wins** — proceed on the code and update this skill.
+> **Ground-truth anchors:** <the real entry-point paths a task on this surface will touch —
+> e.g. routes `src/api/routes/*.py` · components `src/components/{a,b}/` · config `src/core/config.py`.
+> These are the starting paths for the Ground phase's Explore/Read.>
+
+## <Stack / key facts (locked)>
+
+<Framework + versions. The load-bearing decisions that should NOT be reopened without
+cause — list them so the harness's intake can spot when a task tries to reopen one.>
+
+## <The main abstractions on this surface>
+
+<The 2–5 things someone editing this surface must understand before touching it. Examples:
+the request/stream flow; the component tree and where state lives; the deploy targets and
+their gotchas; the data contract / schema. Be specific and concrete — this is the payload
+that makes loading the skill worth the context cost.>
+
+## <Surface-specific rules / gotchas>
+
+<Any always-on rule that applies specifically here: secrets handling, a CORS/origin
+gotcha that caused a real failure, a "do not add dependency X" boundary, a red line on
+fabricated values. Cross-link other skills with their names where relevant.>
+
+## Conventions
+
+<Naming, indentation, quote style, comment policy as observed in THIS surface's code.
+What to preserve. "Preserve existing architecture; propose refactors separately."
+Any per-action approval gates route back through the `harness` Report & approval phase.>

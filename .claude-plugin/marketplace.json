@@ -1,0 +1,14 @@
+{
+  "name": "jacksen-workflow",
+  "owner": {
+    "name": "jacksen-ng"
+  },
+  "description": "Jacksen's personal Claude Code workflow marketplace.",
+  "plugins": [
+    {
+      "name": "harness-kit",
+      "source": "./plugins/harness-kit",
+      "description": "Closed-loop dev workflow: harness orchestrator + project bootstrapper + scaffold / vibe-coding / git-commit skills."
+    }
+  ]
+}

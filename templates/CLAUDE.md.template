@@ -1,0 +1,73 @@
+# CLAUDE.md
+
+Thin context guide for `<repo-name>`. Holds only the **always-on hard rules** and a
+**routing table**. Detailed domain context lives in on-demand skills under
+`.claude/skills/` (progressive disclosure — loaded only when a task hits that surface,
+keeping this file small as the project grows).
+
+**Start non-trivial work through the `harness` skill** — it runs the
+intake → plan → dispatch → ground → implement → verify → gate → approve loop and
+routes to the right domain skill(s).
+
+---
+
+## Routing table — where the detail lives
+
+| Task surface | Load skill |
+|---|---|
+| <UI / components / streaming render / onboarding> | **<prefix>-frontend** |
+| <API routes / services / business logic> | **<prefix>-backend** |
+| <deploy / Docker / cloud / CI> | **<prefix>-infra** |
+| <data / scrapers / pipelines / analysis> | **<prefix>-data** |
+| <relational persistence — load only when DB work is requested> | **<prefix>-db** |
+
+Reuse existing skills for the gate phase: `/code-review`, `/security-review`,
+`/verify`, `/run`, `/git-commit`, `/vibe-coding`, `/dev-init`.
+
+Reference docs (deeper than the skills): <docs/… pointers, if any>.
+
+---
+
+## 1. What this repo is (one paragraph)
+
+<one paragraph: what it does, who it's for, the current north star. Keep it concrete —
+this is the first thing every task reads.>
+
+---
+
+## 2. Always-on hard rules
+
+- **User global rules apply.** Any delete or git operation needs explicit per-action
+  approval; reply language follows the user; privacy paths are off-limits. These live in
+  `~/.claude/CLAUDE.md` — not re-pasted here, but always in force.
+- <project-specific always-on rules — add ONLY what you can justify from the repo or the
+  user states. Examples: secrets discipline (mask all but last 4); a locked source/feature
+  list; a "never fabricate numbers" red line; an architecture invariant; a sibling-repo
+  boundary.>
+
+---
+
+## 3. Coding conventions (non-negotiable)
+
+- <naming: snake_case (Python) / camelCase (TS), etc. — match what the repo already does>
+- <indentation, quote style, string formatting>
+- <comment policy — e.g. no inline comments; docstrings fine>
+- <language rules — e.g. user-facing copy in X, code identifiers in English>
+
+---
+
+## 4. Open decisions — do NOT decide unilaterally
+
+For these, propose 2–3 options with tradeoffs and wait for direction:
+
+1. <design question with more than one defensible answer>
+2. <another, if any>
+
+Settled decisions are documented in their respective skills and in git history — don't
+reopen them without cause.
+
+---
+
+## 5. When in doubt
+
+Ask. <name the few places where a wrong call compounds fastest for this repo.>
