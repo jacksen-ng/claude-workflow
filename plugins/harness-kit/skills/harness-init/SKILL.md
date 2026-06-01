@@ -1,6 +1,6 @@
 ---
 name: harness-init
-description: Bootstrap a project to use the harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates THREE things into the repo: (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine, self-contained), (2) a thin CLAUDE.md (always-on rules + routing table), and (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
+description: Bootstrap a project to use the harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates THREE things into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine, self-contained), (2) a thin CLAUDE.md (always-on rules + routing table), and (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
 ---
 
 # Harness Init — Project Bootstrapper
@@ -206,7 +206,7 @@ Reuse existing skills for the gate phase: `/code-review`, `/security-review`, `/
 ---
 name: <prefix>-<surface>
 description: <Surface> domain context for <repo-name>. Load when working on
-  <concrete triggers: files, features, subsystems>. Covers <the stack, the key
+  <concrete triggers — files, features, subsystems>. Covers <the stack, the key
   abstractions, the locked decisions for this surface>.
 ---
 
