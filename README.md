@@ -35,7 +35,7 @@ fully separate.
 
 ```text
 /plugin marketplace add jacksen-ng/claude-workflow      # register the marketplace
-/plugin install harness-kit@jacksen-workflow            # install the whole workflow
+/plugin install harness-kit@jack-workflow               # install the whole workflow
 ```
 
 After install, the 5 skills are **user-global** by default and available in every project
@@ -59,7 +59,7 @@ automatically:
 # 1. edit a skill / template
 # 2. bump "version" in plugins/harness-kit/.claude-plugin/plugin.json
 # 3. push to GitHub
-/plugin marketplace update jacksen-workflow
+/plugin marketplace update jack-workflow
 /reload-plugins
 ```
 
@@ -70,7 +70,7 @@ For local iteration without pushing, add the marketplace by local path
 
 | Path | Purpose |
 |---|---|
-| `.claude-plugin/marketplace.json` | marketplace manifest (name: `jacksen-workflow`) |
+| `.claude-plugin/marketplace.json` | marketplace manifest (name: `jack-workflow`) |
 | `plugins/harness-kit/.claude-plugin/plugin.json` | plugin manifest (name: `harness-kit`, semver) |
 | `plugins/harness-kit/skills/*` | the 5 bundled skills |
 | `templates/CLAUDE.md.template` | thin CLAUDE.md skeleton (human reference; `harness-init` embeds the same) |
