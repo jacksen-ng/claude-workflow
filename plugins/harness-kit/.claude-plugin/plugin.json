@@ -1,7 +1,7 @@
 {
   "name": "harness-kit",
-  "version": "0.2.2",
-  "description": "Jacksen's personal closed-loop dev workflow: a project bootstrapper that stamps a local harness-engineering orchestrator + domain skills into each repo, plus scaffold / vibe-coding / git-commit skills.",
+  "version": "0.3.0",
+  "description": "Jacksen's personal closed-loop dev workflow: a project bootstrapper that stamps a local harness-engineering orchestrator + domain skills into each repo, plus scaffold / coding-standards / git-commit skills.",
   "author": {
     "name": "jacksen-ng"
   },

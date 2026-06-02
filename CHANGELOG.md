@@ -5,6 +5,14 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.3.0] - 2026-06-02
+### Changed
+- Renamed the `vibe-coding` skill to `coding-standards`. The old name was misleading: the
+  skill is a conservative engineering contract (minimal invasiveness, solution-first,
+  preserve existing architecture, mock-data-as-contract, comment/style discipline) — the
+  opposite of casual "vibe coding". Updated every reference across the bootstrapper,
+  templates, and manifests; `/vibe-coding` is now `/coding-standards`.
+
 ## [0.2.2] - 2026-06-01
 ### Changed
 - `harness-init` now handles repos that already have skills: it inventories the existing

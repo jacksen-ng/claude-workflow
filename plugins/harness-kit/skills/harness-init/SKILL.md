@@ -69,7 +69,7 @@ Creating or editing these files needs no git action. Do **not** commit — commi
 ```markdown
 ---
 name: harness-engineering
-description: Orchestration entry point for <repo-name>. Use this skill at the START of any non-trivial feature request, change, or multi-step task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a closed-loop workflow — intake guardrails, planning with a sprint contract, on-demand loading of the right domain skill(s), grounding context against live code, implementation, verification, and a quality/security gate. Routes to the <prefix>-* domain skills and reuses /code-review, /security-review, /verify, /run, /git-commit, /vibe-coding, /dev-init.
+description: Orchestration entry point for <repo-name>. Use this skill at the START of any non-trivial feature request, change, or multi-step task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a closed-loop workflow — intake guardrails, planning with a sprint contract, on-demand loading of the right domain skill(s), grounding context against live code, implementation, verification, and a quality/security gate. Routes to the <prefix>-* domain skills and reuses /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
 ---
 
 # harness-engineering — <repo-name> Orchestrator
@@ -122,7 +122,7 @@ update the stale skill's SKILL.md (a doc fix, no approval needed; do NOT also co
 ### Phase 5 — Implement
 Follow the repo's conventions (CLAUDE.md / domain skill / surrounding code). Match existing style.
 Preserve architecture — no opportunistic refactors; propose those separately. Fall back to
-`/vibe-coding` defaults when conventions aren't stated.
+`/coding-standards` defaults when conventions aren't stated.
 
 ### Phase 6 — Verify (separate generation from evaluation)
 Don't let the context that wrote the code judge it done. Run `/verify` or `/run`, or the tests.
@@ -150,7 +150,7 @@ Cross-cutting tasks load multiple. Custom agents available to dispatch: <list fr
 
 ## What this skill does NOT do
 It sequences existing skills (`/code-review`, `/security-review`, `/verify`, `/run`,
-`/git-commit`, `/vibe-coding`, `/dev-init`) — it does not reimplement them. Keep it an
+`/git-commit`, `/coding-standards`, `/dev-init`) — it does not reimplement them. Keep it an
 orchestration contract; prune a phase if it stops adding value.
 ```
 
@@ -177,7 +177,7 @@ right domain skill(s).
 | <e.g. data / pipelines> | **<prefix>-data** |
 
 Reuse existing skills for the gate phase: `/code-review`, `/security-review`, `/verify`,
-`/run`, `/git-commit`, `/vibe-coding`, `/dev-init`.
+`/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
 
 ## 1. What this repo is (one paragraph)
 

@@ -22,7 +22,7 @@ routes to the right domain skill(s).
 | <relational persistence — load only when DB work is requested> | **<prefix>-db** |
 
 Reuse existing skills for the gate phase: `/code-review`, `/security-review`,
-`/verify`, `/run`, `/git-commit`, `/vibe-coding`, `/dev-init`.
+`/verify`, `/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
 
 Reference docs (deeper than the skills): <docs/… pointers, if any>.
 
