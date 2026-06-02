@@ -72,6 +72,4 @@ refresh a project's local `harness-engineering`.
 | `.claude-plugin/marketplace.json` | marketplace manifest (name: `jack-workflow`) |
 | `plugins/harness-kit/.claude-plugin/plugin.json` | plugin manifest (name: `harness-kit`, semver) |
 | `plugins/harness-kit/skills/*` | the 4 bundled skills (harness-init, dev-init, coding-standards, git-commit) |
-| `templates/harness-engineering.SKILL.md.template` | the local orchestrator template `harness-init` stamps per project |
-| `templates/CLAUDE.md.template` | thin CLAUDE.md skeleton |
-| `templates/domain-skill.SKILL.md.template` | domain-skill template (snapshot header + ground-truth anchors) |
+| `plugins/harness-kit/skills/harness-init/SKILL.md` | embeds Template A (engine) / B (CLAUDE.md) / C (domain skill) — the single source the bootstrapper stamps from |

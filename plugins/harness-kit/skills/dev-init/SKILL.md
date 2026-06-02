@@ -1,9 +1,9 @@
 ---
-name: scaffold
+name: dev-init
 description: Jacksen's standardized project structure, Docker configuration templates, and development logging conventions. Use this skill when initializing new projects, setting up development environment, or generating developer logs. Automatically applies when detecting project setup or documentation tasks.
 ---
 
-# Scaffold Skill
+# dev-init
 
 ## Trigger Conditions
 

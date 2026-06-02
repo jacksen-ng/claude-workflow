@@ -1,3 +1,8 @@
+---
+name: git-commit
+description: Jacksen's git commit message style — short, single-line, conventional `<type>` prefix then a brief description. Use when writing a commit message or when the user asks to commit changes ("提交", "commit this", "帮我 commit", "write a commit message"). Covers the type set (feat / fix / docs / change / delete / deploy) and the under-50-char, imperative-mood, lowercase rules.
+---
+
 # Git Commit Message Skill
 
 ## Overview
@@ -18,7 +23,7 @@ This skill provides guidelines for Jacksen's git commit message style - simple, 
 | `feat` | New feature added | `feat: add Elasticsearch search` |
 | `fix` | Bug fix or code correction | `fix: resolve login timeout issue` |
 | `docs` | Documentation or file additions | `docs: add API documentation` |
-| `change` | Documentation or file additions | change: requirement.txt |
+| `change` | Behavioral/config/dependency change that is neither feat nor fix | `change: bump fastapi to 0.111` |
 | `delete` | Remove features or code | `delete: remove deprecated API endpoint` |
 | `deploy` | Project deployment | `deploy: production release v1.2.0` |
 
@@ -54,6 +59,7 @@ feat: This commit adds a new feature that allows users to search for properties 
 **Adding something new?** → `feat:`
 **Fixing broken code?** → `fix:`
 **Adding/updating docs or files?** → `docs:`
+**Other behavioral/config/dependency change?** → `change:`
 **Removing code or features?** → `delete:`
 **Deploying to server?** → `deploy:`
 
@@ -110,7 +116,7 @@ claude code "review changes and create a short commit"
 ## Review Checklist
 
 Before committing:
-- [ ] Is the type correct (feat/fix/docs/delete/deploy)?
+- [ ] Is the type correct (feat/fix/docs/change/delete/deploy)?
 - [ ] Is the message under 50 characters?
 - [ ] Does it clearly describe what changed?
 - [ ] Is it in imperative mood and lowercase after colon?

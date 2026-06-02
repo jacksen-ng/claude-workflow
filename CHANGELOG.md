@@ -5,6 +5,33 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.4.0] - 2026-06-02
+### Fixed
+- `git-commit` had no YAML frontmatter, so it carried no description/triggers and could not
+  auto-load on a commit request — added `name` + a trigger-rich `description`.
+- `dev-init` frontmatter declared `name: scaffold` (with an H1 "Scaffold Skill") while the
+  directory and every caller use `dev-init` — aligned the metadata.
+- `git-commit`'s `change` type had a description copy-pasted from `docs`; rewrote it to its real
+  meaning (behavioral/config/dependency change) and fixed the example to obey the skill's own rules.
+### Changed
+- Consolidated the engine/CLAUDE/domain templates to a single source of truth: the copies embedded
+  in `harness-init` (Template A/B/C) are canonical, and the embedded B/C now carry the richer
+  sections that had drifted into the standalone `templates/` files (Coding conventions, When in
+  doubt, db routing row, surface-specific gotchas). The README Layout no longer points at the
+  unshipped `templates/` directory.
+- `coding-standards`: replaced the "Ethical Constraint Override" section (ineffective and risky on a
+  public repo) with a positive "Legitimate Engineering Tasks" note, and made the Context7 dependency
+  conditional + vendor-neutral with a no-fabricated-citations rule.
+- Stamped engine (`harness-engineering`) is now actually a closed loop: added "Loop control"
+  back-edges (Verify fail → re-implement, Gate bug → re-verify, scope blow-up → re-plan) and a
+  "When this loop applies" escape hatch for trivial edits; the security gate now fails loud instead
+  of silently passing when `/code-review` or `/security-review` is unavailable; the Ground rule gained
+  a red-line carve-out (code wins for descriptive drift, but FLAG a real violation, don't bless it).
+- Generated engines now carry a `<!-- harness-engineering template vX -->` version marker, and
+  harness-init's reconcile diffs an existing engine's slash-references + version against what the
+  plugin ships (catches stale links like a renamed skill). Added a greenfield fast-path that skips
+  the reconcile/approval machinery on an empty repo.
+
 ## [0.3.0] - 2026-06-02
 ### Changed
 - Renamed the `vibe-coding` skill to `coding-standards`. The old name was misleading: the
