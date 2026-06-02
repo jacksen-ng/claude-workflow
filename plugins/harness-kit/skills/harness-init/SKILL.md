@@ -1,6 +1,6 @@
 ---
 name: harness-init
-description: Bootstrap a project to use the harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates THREE things into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine, self-contained), (2) a thin CLAUDE.md (always-on rules + routing table), and (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
+description: Bootstrap a project to use the harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates THREE things into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine, self-contained), (2) a thin CLAUDE.md (always-on rules + routing table), and (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template. If the repo already has skills or a CLAUDE.md, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
 ---
 
 # Harness Init — Project Bootstrapper
@@ -15,57 +15,52 @@ This is the **context layer** (a local orchestrator + CLAUDE.md + domain skills)
 
 **Generate from the live repo, not from a guess.** Every path, anchor, and convention you write into the generated skills must come from what you actually observed in the repo — not assumption. A domain skill that lists wrong paths is worse than none (it sends the harness to ground against fiction). When you genuinely can't tell, write a placeholder and flag it for the user rather than inventing.
 
+**On a repo that already has context, read it first and reconcile.** Treat existing skills as the *map* and the live code as the *territory*; where they conflict, the code wins and you propose the fix. Never overwrite an existing file — any change to something that already exists (a skill, CLAUDE.md, an agent) is a *proposed edit* that waits for approval (per the user's overwrite rule); only brand-new files are created directly.
+
 ## Procedure
 
-### Step 1 — Explore the repo (read-only)
+The flow is **analyze → plan → approve → write**. On a fresh repo it's mostly generation; on a repo that already has skills it's a reconcile. Nothing is written to an **existing** file until the user approves the plan — only brand-new files are created directly.
 
-Build an accurate picture before writing anything. Spawn the **Explore** subagent (or Read/Grep directly for small repos) to determine:
+### Step 1 — Explore the repo AND inventory existing context (read-only)
 
-- **Stack & languages** — `package.json`, `requirements.txt`/`pyproject.toml`, `go.mod`, `pubspec.yaml`, `docker-compose.yml`, lockfiles, framework signals (Next.js, FastAPI, Flutter, etc.).
-- **Top-level shape** — the real first- and second-level directories (`frontend/`, `backend/`, `infra/`, `.github/workflows/`, `scripts/`, …).
-- **Existing context** — is there already a `CLAUDE.md`? a `.claude/skills/`? `.claude/agents/`? Don't clobber; merge or report.
-- **Conventions in the wild** — indentation, naming (snake_case vs camelCase), quote style, comment density, test framework. Read a couple of representative files.
-- **Stated intent** — README, docs/, any design notes that say what the project is *for*.
+Two read-only passes, no writing yet:
 
-### Step 2 — Map domains
+**A. The live code.** Spawn the **Explore** subagent (or Read/Grep for small repos) to learn: stack & languages (`package.json`, `requirements.txt`/`pyproject.toml`, `go.mod`, `pubspec.yaml`, `docker-compose.yml`, framework signals like Next.js / FastAPI / Flutter), the real top-level shape (`frontend/`, `backend/`, `infra/`, `.github/workflows/`, …), conventions in the wild (naming, indentation, quote style, comment density, test framework — read a couple of representative files), and stated intent (README, docs/).
 
-From what you observed, propose the **natural domain surfaces** for this repo — only the ones that actually exist. Typical surfaces:
+**B. The existing context.** Inventory what's already in `.claude/`: every `skills/*/SKILL.md`, the root `CLAUDE.md`, every `agents/*`. For each existing skill note which surface it covers, its **Ground-truth anchors**, and what it claims. Read them — do not touch. If existing skills use a naming **prefix** (e.g. `japass-`, `acme-`), record it; you will reuse it.
 
-| Surface | Generate a skill when the repo has… |
+### Step 2 — Map domains from the code
+
+From the live code, list the natural domain surfaces that actually exist — frontend / web / mobile / backend / infra / data / db / custom — only the ones present (one skill per real surface; defer ones not used yet as "load only when requested"). You now hold two lists: **surfaces-in-code** and **existing-skills**. Pick the skill **prefix**: reuse the existing one if the repo already has skills; otherwise derive a short, stable one from the repo name.
+
+### Step 3 — Reconcile (the key step — read-only analysis)
+
+Skip on a fresh repo (no existing skills — everything is simply "new"). Otherwise classify each surface by comparing the existing skill against the live code:
+
+| Situation | Plan |
 |---|---|
-| frontend / web | a UI app (Next.js/React/Vue/…), `frontend/` or app routes |
-| mobile | Flutter / React Native / native app |
-| backend | an API/service layer (FastAPI/Express/…), routes, business logic |
-| infra / cloud | deploy workflows, IaC, Dockerfiles, cloud config |
-| data | scrapers, pipelines, datasets, analyzers |
-| db | schema, migrations, ORM models (only if relational state exists) |
-| (custom) | any other coherent surface the repo clearly has |
+| Existing skill matches the code | **KEEP** — leave untouched |
+| Existing skill but the code has drifted (stale paths, removed symbols, changed shape) | **UPDATE (propose)** — code wins; note exactly what's out of date |
+| A code surface with no skill yet | **NEW** — generate a domain skill |
+| A skill for a surface no longer in the code | **FLAG** — list it, do NOT delete; ask the user |
 
-Pick a short, stable **prefix** for the project's skills (e.g. repo `acme-shop` → `acme-frontend`, `acme-backend`). One skill per real surface — do not generate empty skills for surfaces the repo doesn't have. Deferred surfaces (e.g. a DB not used yet) get a "load only when actually requested" skill, mirroring how mature projects defer them.
+This step only decides; it writes nothing.
 
-### Step 3 — Generate the project-local orchestrator (`harness-engineering`)
+### Step 4 — Present the plan and get approval (gate before touching anything that exists)
 
-Write `.claude/skills/harness-engineering/SKILL.md` from the **orchestrator template** below (Template A). This is the engine — copy it mostly verbatim, then fill the project-specific parts:
-- the `<repo-name>` references,
-- the **Routing table** rows — one per domain you mapped in Step 2, with concrete examples,
-- any **project red lines** for the Phase-1 intake (only ones justified by the repo or stated by the user),
-- if the repo has `.claude/agents/`, list those custom agents as dispatch targets.
+Show one consolidated plan: the prefix; **KEEP** (list), **UPDATE** (list + what drifted), **NEW** (list), **FLAG** (list); plus the two engine pieces — whether `harness-engineering` and `CLAUDE.md` will be **created** (don't exist) or **proposed-as-edit** (already exist, e.g. fixing a stale reference or adding routing rows).
 
-The generic loop mechanics (the 8 phases, ground-before-trust, the gate) stay the same across projects — that's the reusable engine. Only the routing and red lines are project-specific.
+**Hard rule:** any change to a file that already exists (a skill, CLAUDE.md, an agent) is a *proposed edit* that waits for explicit approval — never a silent overwrite (matches the user's "overwrite needs approval" rule). Brand-new files are additive and may be created without a gate, but still appear in the plan.
 
-### Step 4 — Generate the thin CLAUDE.md
+### Step 5 — Write (after approval)
 
-Write `CLAUDE.md` at repo root using Template B. Keep it **thin** — it points to `harness-engineering` as the entry point, mirrors the routing table, holds always-on hard rules, and a one-paragraph "what this repo is". Detail goes in the domain skills. Inherit the user's global hard rules by reference (don't re-paste). If a `CLAUDE.md` already exists, do NOT overwrite — show a proposed merge and ask.
+- **NEW domain skills** → write from Template C, with real anchors from Step 1 and the chosen prefix.
+- **Local orchestrator** → if `harness-engineering` doesn't exist, write it from Template A with the Routing table pointing at the reconciled skill set; if it exists, apply only the approved routing edits. Fill its `<repo-name>`, the routing rows, the Phase-1 **project red lines** (only ones justified by the repo or stated by the user), and any custom agents from `.claude/agents/` as dispatch targets.
+- **CLAUDE.md** → if absent, write a thin one from Template B (routing table = the reconciled skills); if present, apply only the approved merge — do not overwrite.
+- **UPDATE skills** → apply the approved, targeted edits only (fix the stale anchors/claims) — never a full rewrite.
+- **KEEP / FLAG** → leave untouched.
 
-### Step 5 — Generate the domain skills
-
-For each mapped domain, write `.claude/skills/<prefix>-<surface>/SKILL.md` from Template C. Fill: a precise `description` (when to load), the **snapshot warning** header + **Ground-truth anchors** (real paths you found), the domain context you actually learned, the conventions observed.
-
-### Step 6 — Review gate (do not finalize silently)
-
-Present a summary: the prefix, the domains, the orchestrator, the CLAUDE.md, and each skill — for the user to review and correct **before** treating them as canonical. This is durable context infra; a wrong anchor compounds. Apply their corrections.
-
-Writing/creating these files needs no git action. Do **not** commit — committing is an explicit-approval action under the user's hard rules. Mention they can commit via `/git-commit` once happy.
+Creating or editing these files needs no git action. Do **not** commit — committing is an explicit-approval action under the user's hard rules. Mention they can commit via `/git-commit` once happy.
 
 ---
 

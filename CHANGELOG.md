@@ -5,6 +5,17 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.2.2] - 2026-06-01
+### Changed
+- `harness-init` now handles repos that already have skills: it inventories the existing
+  `.claude/` context, reconciles it against the live code (KEEP / UPDATE / NEW / FLAG), and
+  presents a plan for approval before writing. Existing skills are reused as routing targets;
+  stale ones get proposed updates (code wins).
+### Added
+- Non-destructive guarantee: existing files are never overwritten — any change to something
+  that already exists is a proposed edit that waits for approval; only brand-new files are
+  created directly.
+
 ## [0.2.1] - 2026-06-01
 ### Fixed
 - Invalid YAML in `harness-init` frontmatter — an unquoted `: ` (colon + space) in the
