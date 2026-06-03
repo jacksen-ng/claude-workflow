@@ -5,6 +5,26 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.5.0] - 2026-06-03
+### Added
+- Supply-chain hardening against package hallucination / **slopsquatting** (attackers pre-register
+  the package names LLMs are known to hallucinate). `coding-standards` §4 gains a **verify-before-add
+  gate** (registry-existence → official-vs-look-alike → legitimacy signals, grounded against the live
+  registry, never model memory) plus non-executing install defaults (npm `--ignore-scripts`, PyPI
+  `--only-binary=:all:`), a locked-install preference (`npm ci` / `--require-hashes`), and a release
+  cooldown note.
+- Engine Phase 1 gains intake item **(5) New dependency**; Phase 7 gains a **dependency-provenance
+  scan** step (Socket / OSV / `npm audit` / `pip-audit` if available, else registry-existence
+  fallback — never a silent pass). CLAUDE.md template gains a dependency-provenance always-on red line.
+- `harness-init` now stamps an **install-guard `PreToolUse` hook** into each bootstrapped project
+  (new Template D: `.claude/hooks/install-guard.py` + a `.claude/settings.json` entry) — the doc rules
+  guide the model, the hook intercepts the actual `npm/pip/...` install and asks the user to verify first.
+### Changed
+- Engine template marker bumped 0.4.0 → 0.5.0; standalone `templates/harness-engineering.SKILL.md.template`
+  reconciled back up to canonical Template A (it had drifted — was missing the version marker, the
+  Phase-4 red-line carve-out, "When this loop applies", "Loop control", and the Phase-7
+  STOP-if-gate-unavailable clause).
+
 ## [0.4.0] - 2026-06-02
 ### Fixed
 - `git-commit` had no YAML frontmatter, so it carried no description/triggers and could not

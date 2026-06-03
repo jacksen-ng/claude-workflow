@@ -40,6 +40,10 @@ this is the first thing every task reads.>
 - **User global rules apply.** Any delete or git operation needs explicit per-action
   approval; reply language follows the user; privacy paths are off-limits. These live in
   `~/.claude/CLAUDE.md` — not re-pasted here, but always in force.
+- **Dependency provenance.** Never add or install a package without grounding it against the
+  live registry first (exists · official, not a look-alike · sane legitimacy signals) — see
+  `/coding-standards` §4. Default installs to non-executing (npm `--ignore-scripts`, PyPI
+  `--only-binary=:all:`); installing is an explicit-approval action.
 - <project-specific always-on rules — add ONLY what you can justify from the repo or the
   user states. Examples: secrets discipline (mask all but last 4); a locked source/feature
   list; a "never fabricate numbers" red line; an architecture invariant; a sibling-repo

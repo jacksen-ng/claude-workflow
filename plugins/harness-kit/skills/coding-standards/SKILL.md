@@ -76,12 +76,19 @@ If a document is provided but lacks critical details:
 - Suggest completing the document first for complex features
 
 ### 4. Dependency Management
-- When new packages are required, prefer updating `requirements.txt`, `package.json`, etc. instead of executing install commands
-- Do not run `install` commands unless explicitly permitted
-- For version mismatches:
-  - Point out current vs. required versions
-  - Suggest at least 2 resolutions (e.g. upgrade, downgrade, use alternative)
-  - Explain the risk and impact of each
+
+**Verify before you add (every new package — npm or PyPI).** A model-suggested package name may not exist, or may be a malicious look-alike registered to catch exactly that suggestion ("slopsquatting" — attackers pre-register names that LLMs are known to hallucinate). Ground the name against the live registry, never your own memory:
+
+1. **Exists?** `npm view <pkg>` / `curl -fsS https://pypi.org/pypi/<pkg>/json` (or `pip index versions <pkg>`). A 404 / `E404` means it does not exist — treat as a hallucination, STOP, and do NOT install or add it.
+2. **Official, not a look-alike?** Confirm it is the package you actually intended. Flag if the name is one or two edits from a far more popular package (typo/slopsquat), or cross-language confusion (a "Python" name that is really an npm package).
+3. **Legitimacy signals** (heuristic, not proof — weigh them together): brand-new creation date, near-zero or oddly-recent downloads, a single anonymous maintainer, or no linked source repo = malicious-newcomer profile → STOP and escalate to the user. Established packages get hijacked too, so a clean profile is necessary, not sufficient.
+
+Only after it passes:
+- Prefer updating `requirements.txt`, `package.json`, etc. instead of executing install commands.
+- Do not run `install` commands unless explicitly permitted. When permitted, default to a **non-executing** install: npm `--ignore-scripts` (or `ignore-scripts=true` in `.npmrc`); PyPI `--only-binary=:all:` (an sdist runs `setup.py` at install time, and pip has no `--ignore-scripts` — binary-only IS the mitigation). Lifecycle/build scripts are the #1 install-time malware path; re-enable per-package only after vetting.
+- Prefer the locked, reproducible path: `npm ci` / `pip install --require-hashes -r requirements.txt`.
+- **Cooldown:** avoid adopting a release published in the last ~7 days unless there's a specific reason — most slopsquat/malware exploitation windows are under a week. npm/pnpm and pip support a minimum-release-age setting natively.
+- For version mismatches: point out current vs. required versions, suggest at least 2 resolutions (upgrade / downgrade / alternative), and explain the risk and impact of each.
 
 ### 4.5 Real-time Documentation Access (when available)
 - When you hit an unfamiliar library/API or need current docs, and a documentation MCP server (e.g. Context7) is available, query it instead of relying on possibly-stale training data, and cite the source you read.
