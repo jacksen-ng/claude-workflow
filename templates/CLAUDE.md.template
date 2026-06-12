@@ -1,13 +1,14 @@
 # CLAUDE.md
 
-Thin context guide for `<repo-name>`. Holds only the **always-on hard rules** and a
-**routing table**. Detailed domain context lives in on-demand skills under
-`.claude/skills/` (progressive disclosure — loaded only when a task hits that surface,
-keeping this file small as the project grows).
+Thin context guide for `<repo-name>`. Holds only the **always-on hard rules**, the
+**decision boundary**, and a **routing table**. Detailed domain context lives in on-demand
+skills under `.claude/skills/` (progressive disclosure — loaded only when a task hits that
+surface, keeping this file small as the project grows).
 
-**Start non-trivial work through the `harness-engineering` skill** — it runs the
-intake → plan → dispatch → ground → implement → verify → gate → approve loop and
-routes to the right domain skill(s).
+**Start every development task through the `harness-engineering` skill** — it runs the
+docs-driven closed loop (recall → intake/grill → five-doc spec gate → dispatch → ground →
+implement → verify → gate → per-action approvals → retrospect) and routes to the right
+domain skill(s).
 
 ---
 
@@ -21,8 +22,8 @@ routes to the right domain skill(s).
 | <data / scrapers / pipelines / analysis> | **<prefix>-data** |
 | <relational persistence — load only when DB work is requested> | **<prefix>-db** |
 
-Reuse existing skills for the gate phase: `/code-review`, `/security-review`,
-`/verify`, `/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
+Reuse existing skills: `/grill-me` (requirement clarification), `/code-review`,
+`/security-review`, `/verify`, `/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
 
 Reference docs (deeper than the skills): <docs/… pointers, if any>.
 
@@ -37,9 +38,12 @@ this is the first thing every task reads.>
 
 ## 2. Always-on hard rules
 
-- **User global rules apply.** Any delete or git operation needs explicit per-action
-  approval; reply language follows the user; privacy paths are off-limits. These live in
-  `~/.claude/CLAUDE.md` — not re-pasted here, but always in force.
+- **Dead rules from `~/.claude/CLAUDE.md` — never bypassed by any spec, phase, or prior
+  approval:** every git operation (branch, commit, push, merge, …) and every delete needs
+  explicit PER-ACTION approval; reply language follows the user; privacy paths are off-limits.
+- **Docs-driven gate.** No development work starts before its `docs/specs/<NNN>-<slug>/` doc
+  set exists and is approved (see harness-engineering Phase 2). Five docs, mandatory;
+  `design.md` only when UI/UX is touched. Docs are written in English.
 - **Dependency provenance.** Never add or install a package without grounding it against the
   live registry first (exists · official, not a look-alike · sane legitimacy signals) — see
   `/coding-standards` §4. Default installs to non-executing (npm `--ignore-scripts`, PyPI
@@ -60,15 +64,29 @@ this is the first thing every task reads.>
 
 ---
 
-## 4. Open decisions — do NOT decide unilaterally
+## 4. Decision boundary — who decides what
 
-For these, propose 2–3 options with tradeoffs and wait for direction:
+**Tier 1 — the user decides. Propose options (with a recommendation), then WAIT:**
+- Direction / scope changes; anything that re-opens a locked decision
+- Approving a spec doc set (Phase 2); any later change to an approved `requirement.md` /
+  `design.md`'s **semantics**
+- UI/UX choices visible to end users — decided in `design.md`, never improvised in code
+- Business-logic **semantics** — changing what the system is *supposed* to do (a bug fix
+  restoring documented/intended behavior is Tier 2; changing the intent is Tier 1)
+- New or bumped dependencies (after the `/coding-standards` §4 verify-before-add gate)
+- **Every git action and every delete — per-action, no exceptions, not pre-approvable by
+  any spec or contract (dead rule from `~/.claude/CLAUDE.md`)**
+- Promoting a lesson to a red line or a hook (Phase 9)
+- Open design questions: <list the repo-specific ones with >1 defensible answer>
 
-1. <design question with more than one defensible answer>
-2. <another, if any>
+**Tier 2 — autonomous inside an approved spec:**
+- Implementing the approved slices; bug fixes restoring intended behavior; tests
+- Doc / skill / LESSONS.md updates that track approved intent (mechanics, not semantics);
+  spec status flips in Phase 9
+- Harness-owned state under `.claude/state/` (create / append / clear)
 
-Settled decisions are documented in their respective skills and in git history — don't
-reopen them without cause.
+Ambiguous → Tier 1. No approved spec → no Tier-2 envelope; everything non-trivial waits.
+Settled decisions are documented in their specs and skills — don't reopen them without cause.
 
 ---
 

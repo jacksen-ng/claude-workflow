@@ -1,27 +1,27 @@
 ---
 name: harness-init
-description: Bootstrap a project to use the harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates THREE things into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine, self-contained), (2) a thin CLAUDE.md (always-on rules + routing table), and (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template. If the repo already has skills or a CLAUDE.md, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
+description: Bootstrap a project to use the docs-driven harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates the full context layer into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine with recall/retrospect learning, self-contained) plus its LESSONS.md failure map, (2) a thin CLAUDE.md (always-on rules + decision boundary + routing table), (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template, (4) spec-doc templates under docs/specs/ for the mandatory five-doc gate (requirement / design / implementation / testing / fallback), and (5) enforcement hooks (install-guard, retrospect-guard). If the repo already has skills, a CLAUDE.md, or docs, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
 ---
 
 # Harness Init — Project Bootstrapper
 
-One-shot setup that stamps the user's reusable workflow onto a repo. The goal: after running this, the repo is **self-contained** — it has its own local `harness-engineering` orchestrator that runs the closed loop and routes to thin per-domain skills, exactly like the user's mature projects, without depending on any global skill.
+One-shot setup that stamps the user's reusable workflow onto a repo. The goal: after running this, the repo is **self-contained** — it has its own local `harness-engineering` orchestrator that runs the docs-driven closed loop (spec gate → implement → verify → retrospect), learns from its own failures via LESSONS.md, and routes to thin per-domain skills, exactly like the user's mature projects, without depending on any global skill.
 
-This is the **context layer** (a local orchestrator + CLAUDE.md + domain skills + an install-guard hook). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
+This is the **context layer** (a local orchestrator + LESSONS.md + CLAUDE.md + domain skills + spec-doc templates + two enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
 
-**Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *template* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own.
+**Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *templates* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own.
 
 ## Operating principle
 
 **Generate from the live repo, not from a guess.** Every path, anchor, and convention you write into the generated skills must come from what you actually observed in the repo — not assumption. A domain skill that lists wrong paths is worse than none (it sends the harness to ground against fiction). When you genuinely can't tell, write a placeholder and flag it for the user rather than inventing.
 
-**On a repo that already has context, read it first and reconcile.** Treat existing skills as the *map* and the live code as the *territory*; where they conflict, the code wins and you propose the fix. Never overwrite an existing file — any change to something that already exists (a skill, CLAUDE.md, an agent) is a *proposed edit* that waits for approval (per the user's overwrite rule); only brand-new files are created directly.
+**On a repo that already has context, read it first and reconcile.** Treat existing skills as the *map* and the live code as the *territory*; where they conflict, the code wins and you propose the fix. An existing `LESSONS.md` or `docs/specs/` content is a **project asset** — keep its entries, never regenerate them. Never overwrite an existing file — any change to something that already exists (a skill, CLAUDE.md, an agent, a doc) is a *proposed edit* that waits for approval (per the user's overwrite rule); only brand-new files are created directly.
 
 ## Procedure
 
 The flow is **analyze → plan → approve → write**. On a fresh repo it's mostly generation; on a repo that already has skills it's a reconcile. Nothing is written to an **existing** file until the user approves the plan — only brand-new files are created directly.
 
-**Fast path (greenfield).** If `.claude/skills/` is empty and there is no root `CLAUDE.md`, there is nothing to reconcile: skip Steps 3–4 entirely (every file is new and additive, so no approval gate), do a light Step 1 explore just to fill the templates, write, and show the result. The reconcile machinery (Steps 3–4) exists only for repos that already carry context.
+**Fast path (greenfield).** If `.claude/skills/` is empty and there is no root `CLAUDE.md`, there is nothing to reconcile: skip Steps 3–4 entirely (every file is new and additive, so no approval gate), do a light Step 1 explore just to fill the templates, write all artifacts (Templates A–G), and show the result. The reconcile machinery (Steps 3–4) exists only for repos that already carry context.
 
 ### Step 1 — Explore the repo AND inventory existing context (read-only)
 
@@ -29,7 +29,7 @@ Two read-only passes, no writing yet:
 
 **A. The live code.** Spawn the **Explore** subagent (or Read/Grep for small repos) to learn: stack & languages (`package.json`, `requirements.txt`/`pyproject.toml`, `go.mod`, `pubspec.yaml`, `docker-compose.yml`, framework signals like Next.js / FastAPI / Flutter), the real top-level shape (`frontend/`, `backend/`, `infra/`, `.github/workflows/`, …), conventions in the wild (naming, indentation, quote style, comment density, test framework — read a couple of representative files), and stated intent (README, docs/).
 
-**B. The existing context.** Inventory what's already in `.claude/`: every `skills/*/SKILL.md`, the root `CLAUDE.md`, every `agents/*`. For each existing skill note which surface it covers, its **Ground-truth anchors**, and what it claims. Read them — do not touch. If existing skills use a naming **prefix** (e.g. `japass-`, `acme-`), record it; you will reuse it.
+**B. The existing context.** Inventory what's already in `.claude/`: every `skills/*/SKILL.md` (including a `LESSONS.md` next to an existing engine), the root `CLAUDE.md`, every `agents/*`, every `hooks/*`. Also inventory `docs/` — if the repo already runs an equivalent spec/RFC/ADR convention, note its structure; you will reconcile with it, not impose a duplicate. For each existing skill note which surface it covers, its **Ground-truth anchors**, and what it claims. Read them — do not touch. If existing skills use a naming **prefix** (e.g. `japass-`, `acme-`), record it; you will reuse it.
 
 ### Step 2 — Map domains from the code
 
@@ -46,26 +46,28 @@ Skip on a fresh repo (no existing skills — everything is simply "new"). Otherw
 | A code surface with no skill yet | **NEW** — generate a domain skill |
 | A skill for a surface no longer in the code | **FLAG** — list it, do NOT delete; ask the user |
 
-**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. Note if the engine's template version is behind the current one.
+**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
 
 This step only decides; it writes nothing.
 
 ### Step 4 — Present the plan and get approval (gate before touching anything that exists)
 
-Show one consolidated plan: the prefix; **KEEP** (list), **UPDATE** (list + what drifted), **NEW** (list), **FLAG** (list); plus the two engine pieces — whether `harness-engineering` and `CLAUDE.md` will be **created** (don't exist) or **proposed-as-edit** (already exist, e.g. fixing a stale reference or adding routing rows).
+Show one consolidated plan: the prefix; **KEEP** (list), **UPDATE** (list + what drifted), **NEW** (list), **FLAG** (list); plus the engine pieces — whether `harness-engineering`, `LESSONS.md`, `CLAUDE.md`, the spec layer, and the hooks will be **created** (don't exist) or **proposed-as-edit** (already exist, e.g. fixing a stale reference, adding routing rows, upgrading a v0.5.x engine).
 
-**Hard rule:** any change to a file that already exists (a skill, CLAUDE.md, an agent) is a *proposed edit* that waits for explicit approval — never a silent overwrite (matches the user's "overwrite needs approval" rule). Brand-new files are additive and may be created without a gate, but still appear in the plan.
+**Hard rule:** any change to a file that already exists (a skill, CLAUDE.md, an agent, `.gitignore`, `settings.json`) is a *proposed edit* that waits for explicit approval — never a silent overwrite (matches the user's overwrite rule). Brand-new files are additive and may be created without a gate, but still appear in the plan.
 
 ### Step 5 — Write (after approval)
 
 - **NEW domain skills** → write from Template C, with real anchors from Step 1 and the chosen prefix.
-- **Local orchestrator** → if `harness-engineering` doesn't exist, write it from Template A with the Routing table pointing at the reconciled skill set; if it exists, apply only the approved routing edits. Fill its `<repo-name>`, the routing rows, the Phase-1 **project red lines** (only ones justified by the repo or stated by the user), and any custom agents from `.claude/agents/` as dispatch targets.
+- **Local orchestrator** → if `harness-engineering` doesn't exist, write it from Template A with the Routing table pointing at the reconciled skill set; if it exists, apply only the approved edits. Fill its `<repo-name>`, the routing rows, the Phase-1 **project red lines** (only ones justified by the repo or stated by the user), and any custom agents from `.claude/agents/` as dispatch targets.
+- **Failure map** → if `.claude/skills/harness-engineering/LESSONS.md` is absent, stamp the Template E skeleton. If present, it is a project asset — keep every entry; never regenerate.
 - **CLAUDE.md** → if absent, write a thin one from Template B (routing table = the reconciled skills); if present, apply only the approved merge — do not overwrite.
-- **Install-guard hook** → write `.claude/hooks/install-guard.py` and **merge** a `PreToolUse` entry into `.claude/settings.json` from Template D (merge into existing settings, never clobber). It gates package-install commands behind a confirm + slopsquatting reminder, so the supply-chain rule travels with the repo (teammates, CI). Skip if the project already has an equivalent hook.
+- **Spec layer** → if `docs/specs/` is absent, stamp Template G (`docs/specs/README.md` + the `_templates/` skeletons). If the repo already has an equivalent spec convention, reconcile: reuse its structure, map it in the engine's Phase 2 wording, don't impose a duplicate.
+- **Hooks** → write `.claude/hooks/install-guard.py` (Template D) and `.claude/hooks/retrospect-guard.py` (Template F), and **merge** their `PreToolUse` / `Stop` entries into `.claude/settings.json` (merge into existing settings, never clobber). Ensure `.claude/state/` is listed in `.gitignore` (appending to an existing `.gitignore` is a proposed edit). Skip either hook if the project already has an equivalent one.
 - **UPDATE skills** → apply the approved, targeted edits only (fix the stale anchors/claims) — never a full rewrite.
 - **KEEP / FLAG** → leave untouched.
 
-Creating or editing these files needs no git action. Do **not** commit — committing is an explicit-approval action under the user's hard rules. Mention they can commit via `/git-commit` once happy.
+Creating or editing these files needs no git action. Do **not** commit — every git operation is a dead-rule, explicit-approval action under the user's hard rules. Mention they can commit via `/git-commit` once happy.
 
 ---
 
@@ -74,14 +76,14 @@ Creating or editing these files needs no git action. Do **not** commit — commi
 ```markdown
 ---
 name: harness-engineering
-description: Orchestration entry point for <repo-name>. Use this skill at the START of any non-trivial feature request, change, or multi-step task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a closed-loop workflow — intake guardrails, planning with a sprint contract, on-demand loading of the right domain skill(s), grounding context against live code, implementation, verification, and a quality/security gate. Routes to the <prefix>-* domain skills and reuses /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
+description: Orchestration entry point for <repo-name>. Use this skill at the START of any development task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a docs-driven closed loop — recall lessons, intake guardrails (grilling vague requirements via /grill-me), a mandatory five-doc spec gate (requirement / design / implementation / testing / fallback), on-demand domain skill loading, grounding against live code, implementation, verification against testing.md, a quality/security gate, per-action git approval, and a retrospect that writes LESSONS.md. Routes to the <prefix>-* domain skills and reuses /grill-me, /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
 ---
 
-<!-- harness-engineering template v0.5.0 — generated by harness-init; re-run harness-init to refresh -->
+<!-- harness-engineering template v0.6.0 — generated by harness-init; re-run harness-init to refresh -->
 
 # harness-engineering — <repo-name> Orchestrator
 
-The harness around long-running work in `<repo-name>`. Detailed domain context lives in the
+The harness around development work in `<repo-name>`. Detailed domain context lives in the
 domain skills, loaded on demand (progressive disclosure), so CLAUDE.md stays thin. This file
 holds the workflow, the routing table, and the always-on guardrails.
 
@@ -89,60 +91,103 @@ Guiding idea: the harness is a first-class engineering artifact. Every phase enc
 assumption about what the model should NOT do unsupervised — task scoping, self-evaluation,
 irreversible actions. Prune steps that stop earning their keep.
 
-**Ground before trust (load-bearing).** The domain skills are a *map* — intent, decisions, a
-point-in-time snapshot of structure. The *code* is the territory. Paths/names/signatures in any
-skill MAY be stale. Whenever a task depends on a specific piece of code, verify it against the
-live repo before acting (Phase 4). If reality contradicts a skill, the **code wins** — proceed
-on the code and fix the skill.
+**Three maps, three drift rules (load-bearing).**
+- *Structure map* — the domain skills: paths / names / shapes, a point-in-time snapshot.
+  Where it contradicts the live repo, the **code wins** — proceed on the code, fix the skill.
+- *Failure map* — `LESSONS.md` (next to this file): the recorded mistakes. Phase 0 reads it,
+  Phase 9 writes it. A lesson contradicted by live code → mark `status: stale`, verify, fix
+  or expire.
+- *Intent map* — `docs/specs/`: what the system is SUPPOSED to do. Here the rule inverts:
+  code contradicting an approved `requirement.md` is a bug or an unapproved decision —
+  **FLAG it to the user**; never rewrite the requirement to bless the code.
 
 **Where the rules come from.**
-- User global hard rules (always loaded from `~/.claude/CLAUDE.md`): any delete or git op needs
-  explicit per-action approval; reply language; privacy paths.
-- This repo's `CLAUDE.md`: the always-on section + the routing table (mirrored below).
+- User global hard rules (`~/.claude/CLAUDE.md`) — **dead rules, never bypassed by any phase,
+  spec, or approval below**: every git operation (branch, commit, push, merge, rebase, …) and
+  every delete needs explicit PER-ACTION approval; reply language; privacy paths.
+- This repo's `CLAUDE.md`: the always-on rules, the Decision boundary (§4), the routing table.
 - **Supply chain:** never add or install a package without grounding it against the live registry
   first (slopsquatting guard — see `/coding-standards` §4); installing is an explicit-approval action.
 
 ## The closed loop
 
-Run these phases in order. Do not skip the gate phases (6–8) on any change that touches code.
+Run the phases in order. Do not skip the spec gate (2) or the verification gates (6–7) on any
+change that touches code.
+
+### Phase 0 — Recall (read lessons before planning)
+Read `LESSONS.md` (same directory) if present. Cite the **active** lessons whose `surface`
+overlaps this task — one line each, by ID ("Applying L-003: …"). None apply → say so and move
+on. Do NOT paste the file into the plan; cite IDs. A lesson contradicted by the live code is
+drift: code wins — mark it `status: stale` in Phase 9.
 
 ### Phase 1 — Intake (guardrail checklist)
-One line each: (1) **Scope** — is the request aligned with this repo's goal / in-scope
-constraints? If it drifts, STOP and flag. (2) **Open decisions** — does it touch a question
-with >1 defensible answer? Present 2–3 options and WAIT. (3) **Irreversible** — git or
-delete/overwrite? Mark "requires explicit approval" now (per-action). (4) **Project red lines** —
-<list this repo's always-on red lines, or "none beyond the global rules">. (5) **New dependency** —
-does it add or bump a package (npm/PyPI)? Run the `/coding-standards` §4 verify-before-add gate
-(exists in the registry · is the official package, not a look-alike · sane legitimacy signals)
-BEFORE it lands in any manifest. Installing is privileged and effectively irreversible (lifecycle
-scripts run attacker code at install time) — mark it "requires explicit approval" like any irreversible op.
+One line each:
+(1) **Scope** — aligned with this repo's goal / in-scope constraints? If it drifts, STOP and flag.
+(2) **Tier classification** — walk the planned work against the Decision boundary (CLAUDE.md
+§4). Tier-1 items → each pauses for the user when reached. Ambiguous → Tier 1.
+(3) **Irreversible surface** — every git action and every delete is per-action approval (dead
+rule); list the ones this task will need so the user sees them coming.
+(4) **Project red lines** — <list this repo's always-on red lines, or "none beyond the global rules">.
+(5) **New dependency** — does it add or bump a package (npm/PyPI)? Run the `/coding-standards`
+§4 verify-before-add gate (exists in the registry · is the official package, not a look-alike ·
+sane legitimacy signals) BEFORE it lands in any manifest. Installing is privileged and
+effectively irreversible (lifecycle scripts run attacker code at install time) — per-action approval.
+(6) **Clarity gate** — can every section of `requirement.md` be filled from what the user said,
+without guessing? If yes → Phase 2. If not → invoke `/grill-me`: ONE question at a time, each
+with your recommended answer; a question answerable from the codebase is answered by exploring,
+not by asking. Do NOT interrogate endlessly — take your own recommendation on low-stakes
+choices and record them in the doc as delegated decisions; ask the user only what genuinely
+changes what gets built. Exit as soon as the requirement doc writes itself, or the user
+delegates the rest ("按你推荐的来") — delegations are recorded in the doc, never silent.
 
-### Phase 2 — Plan (sprint contract)
-Decompose into the smallest shippable slices (one feature per slice). Write 2–4 testable success
-criteria. Confirm before coding when the design has >1 defensible answer.
+### Phase 2 — Spec (docs ARE the contract — written BEFORE any code)
+Create `docs/specs/<NNN>-<slug>/` from `docs/specs/_templates/` and draft the full set. The
+set is **mandatory for every development task, however small** — sections may be short, files
+may not be skipped (`design.md` only when the work touches UI/UX; the other four always):
+1. `requirement.md` — what & why, in/out of scope, acceptance criteria (fed by Phase-1 answers)
+2. `design.md` — UI/UX work only: flows, layout & states, copy. All user-visible UI choices
+   are Tier 1 and are decided IN this doc, never improvised in code.
+3. `implementation.md` — the slices (smallest shippable, one feature each), touched surfaces
+   (→ Routing table), proposed branch name, the Tier-2 actions the spec authorizes
+4. `testing.md` — per slice: 2–4 testable criteria + HOW each is verified (command / `/verify`
+   scenario / manual step). Phase 6 executes THIS file.
+5. `fallback.md` — written NOW, while calm: blast radius, detection signals, the concrete
+   rollback procedure (revert range / flag off / redeploy previous / data reversal).
+Present the SET for approval — one gate, not five. Approval authorizes the Tier-2 work in
+Phases 3–7 (implementation edits, tests, doc updates). It does NOT pre-approve any git action
+or delete — those stay per-action (dead rule). Scope growing beyond the approved spec → STOP,
+back to Phases 1–2. Docs are written in English. Status: draft → approved → implemented → superseded.
 
 ### Phase 3 — Dispatch (load domain context on demand)
-Load only the domain skill(s) the task hits (see Routing table). Don't pull all context for a
-localized change. When unsure, load one and expand. If `.claude/agents/` has custom agents,
-dispatch substantial sub-tasks to them.
+Load only the domain skill(s) the spec's slices hit (see Routing table). Don't pull all context
+for a localized change. When unsure, load one and expand. If `.claude/agents/` has custom
+agents, dispatch substantial sub-tasks to them.
 
 ### Phase 4 — Ground (verify context against live code)
 Only when the task depends on specific code. Narrow ("changing this one file") → `Read` it first.
 Broad ("where is X?") → spawn **Explore**, starting from the skill's Ground-truth anchors.
 Uncertain a symbol exists → `Grep`. **Drift:** code wins — proceed on the code, note it, and
 update the stale skill's SKILL.md (a doc fix, no approval needed; do NOT also commit it).
-**Carve-out:** code wins for *descriptive* drift (paths, names, shapes); if the code contradicts a
-stated red line or a locked decision, that is a finding to FLAG — do not silently rewrite the skill
-to bless the violation.
+**Carve-outs:** code wins only for *descriptive* drift (paths, names, shapes). If the code
+contradicts a stated red line, a locked decision, or an approved spec's `requirement.md` (the
+intent map), that is a finding to FLAG — do not silently rewrite the skill or the spec to
+bless the violation.
 
 ### Phase 5 — Implement
-Follow the repo's conventions (CLAUDE.md / domain skill / surrounding code). Match existing style.
-Preserve architecture — no opportunistic refactors; propose those separately. Fall back to
-`/coding-standards` defaults when conventions aren't stated.
+Implement `implementation.md`'s slices in order, following the repo's conventions (CLAUDE.md /
+domain skill / surrounding code). Match existing style. Preserve architecture — no opportunistic
+refactors; propose those separately. Fall back to `/coding-standards` defaults when conventions
+aren't stated. Mid-flight deviation that keeps the approved intent (same requirement, different
+mechanics) → note it in implementation.md's deviation log and continue. Deviation that changes
+requirement/design **semantics** → STOP, Tier 1, re-approve before proceeding.
 
 ### Phase 6 — Verify (separate generation from evaluation)
-Don't let the context that wrote the code judge it done. Run `/verify` or `/run`, or the tests.
-Report failures with output; never claim verified without running something.
+Don't let the context that wrote the code judge it done. Run `testing.md` literally — every
+criterion, by its stated method (a criterion without a method is not a criterion); check each
+off in the doc as it passes. Report failures with output; never claim verified without running
+something. On any failure, append one line `phase 6 | <slice> | <one-line symptom>` to
+`.claude/state/retrospect-queue.md` (create if absent — harness-owned state, exempt from
+approval rules, never committed), then take the back-edge (Loop control).
 
 ### Phase 7 — Quality & Security gate
 In order: `/code-review` (correctness + reuse) → `/security-review` (secrets discipline: mask all
@@ -152,23 +197,50 @@ transitive ones the lockfile resolved) passed the §4 verify-before-add gate, an
 scanner if available (`socket`, `osv-scanner`, `npm audit`, `pip-audit`); no scanner → fall back to
 the registry-existence + legitimacy check on the new names, never a silent pass.
 Re-confirm the Phase-1 red lines held in the actual diff. If `/code-review` or `/security-review`
-does not resolve in this environment, STOP and report the gate was unavailable — never silently pass it.
+does not resolve in this environment, STOP and report the gate was unavailable — never silently
+pass it. Any finding here → also append `phase 7 | <slice> | <one-line symptom>` to
+`.claude/state/retrospect-queue.md` (arms the retrospect-guard).
 
-### Phase 8 — Report & approval
-Summarize what changed and what was verified (faithfully; skipped steps stated as skipped). For
-anything marked irreversible in Phase 1, STOP and ask for explicit approval before executing.
-Use `/git-commit` only after approval.
+### Phase 8 — Report & per-action git approvals
+Summarize per slice: what changed, what `testing.md` verified (faithfully; skipped steps stated
+as skipped), deviations logged, lessons queued. Then the git work — the dead rule applies and
+the spec never pre-approved any of it: present the proposed branch / commit(s) in `/git-commit`
+style / push as a batch FOR REVIEW, but EXECUTE each only on its own explicit approval, one
+action at a time.
+
+### Phase 9 — Retrospect (close the learning loop)
+Trigger: this run had ANY of — a Verify failure, a Gate finding, a Ground drift, a breaker
+trip, or a user correction ("不对 / 不是这样 / 改回去"). No trigger → skip the lesson step;
+never write ritual entries. For each trigger: check `LESSONS.md` for an entry with the same
+ROOT CAUSE — found → bump its `hits` and add the date; new → append an entry per the file's
+embedded format (symptom → root cause → imperative rule). Any lesson reaching `hits ≥ 2` →
+propose (Tier 1) promoting it to a CLAUDE.md red line or a hook; on acceptance mark it
+`status: promoted`. A lesson that would apply in OTHER repos too (workflow-level, not
+project-level) → also save it to global auto-memory. Then close the spec: flip its status
+(`implemented`; partial → note what landed; abandoned → `superseded` + one line on why), and
+clear `.claude/state/retrospect-queue.md`. Lesson/doc writes are plain file edits — no git
+action is implied; committing them waits for Phase-8-style approval like everything else.
 
 ## When this loop applies
-Single-file change with no new decisions and no Phase-1 red line / irreversible surface → just do it
-(still under the global hard rules); don't run the full ceremony. Anything touching a red line or an
-irreversible action → run Intake + the gate even if it looks trivial.
+Every development task — however small — goes through the full five-doc spec gate and the loop;
+the docs scale down in **length**, never in **count** (`design.md` only when UI/UX is touched).
+The only exemption is work that changes no code at all (pure questions, explorations, reviews) —
+no spec needed. The dead rules (git / delete per-action approval) apply always, even
+mid-conversation, even outside the loop.
 
 ## Loop control (the loop is closed — use the back-edges)
 - Verify (6) fails → return to Phase 5; if the failure implies stale assumptions, re-Ground (4) first.
 - Gate (7) finds a correctness bug → fix it and re-run Phase 6 on the fix.
-- Plan (2) or Ground (4) reveals the work materially exceeds the intake scope → STOP and re-run
-  Phases 1–2 with the user before continuing.
+- **Circuit breaker** — at most **3** self-correction cycles per slice (a cycle = one
+  5→6/7→back-to-5 round trip on the same failing criterion). On the 3rd consecutive failure
+  STOP; do not start a 4th attempt. Report the full failure trail (per attempt — what was
+  tried, why it failed, evidence) and propose executing this spec's `fallback.md` rollback
+  procedure to return to the last green slice boundary (every rollback step that is a git
+  action or delete waits for its own per-action approval — dead rule). Escalate as Tier 1.
+  A breaker trip ALWAYS yields a Phase-9 lesson AND a fallback.md review (did the procedure
+  actually work? fix it if not).
+- Spec (2) or Ground (4) reveals the work materially exceeds the approved spec → STOP and
+  re-run Phases 1–2 with the user before continuing.
 
 ## Routing table
 
@@ -181,9 +253,10 @@ Cross-cutting tasks load multiple. Custom agents available to dispatch: <list fr
 `.claude/agents/`, or "none">.
 
 ## What this skill does NOT do
-It sequences existing skills (`/code-review`, `/security-review`, `/verify`, `/run`,
-`/git-commit`, `/coding-standards`, `/dev-init`) — it does not reimplement them. Keep it an
-orchestration contract; prune a phase if it stops adding value.
+It sequences existing skills (`/grill-me`, `/code-review`, `/security-review`, `/verify`,
+`/run`, `/git-commit`, `/coding-standards`, `/dev-init`) — it does not reimplement them. It
+never executes a git action or a delete on its own authority — those are dead-rule, per-action
+user approvals. Keep it an orchestration contract; prune a phase if it stops adding value.
 ```
 
 ## Template B — project `CLAUDE.md` (thin)
@@ -191,13 +264,15 @@ orchestration contract; prune a phase if it stops adding value.
 ```markdown
 # CLAUDE.md
 
-Thin context guide for `<repo-name>`. Holds only the **always-on hard rules** and a
-**routing table**. Detailed domain context lives in on-demand skills under `.claude/skills/`
-(progressive disclosure — loaded only when a task hits that surface).
+Thin context guide for `<repo-name>`. Holds only the **always-on hard rules**, the
+**decision boundary**, and a **routing table**. Detailed domain context lives in on-demand
+skills under `.claude/skills/` (progressive disclosure — loaded only when a task hits that
+surface).
 
-**Start non-trivial work through the `harness-engineering` skill** — it runs the
-intake → plan → dispatch → ground → implement → verify → gate → approve loop and routes to the
-right domain skill(s).
+**Start every development task through the `harness-engineering` skill** — it runs the
+docs-driven closed loop (recall → intake/grill → five-doc spec gate → dispatch → ground →
+implement → verify → gate → per-action approvals → retrospect) and routes to the right
+domain skill(s).
 
 ## Routing table — where the detail lives
 
@@ -209,8 +284,8 @@ right domain skill(s).
 | <e.g. data / pipelines> | **<prefix>-data** |
 | <relational persistence — load only when DB work is requested> | **<prefix>-db** |
 
-Reuse existing skills for the gate phase: `/code-review`, `/security-review`, `/verify`,
-`/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
+Reuse existing skills: `/grill-me` (requirement clarification), `/code-review`,
+`/security-review`, `/verify`, `/run`, `/git-commit`, `/coding-standards`, `/dev-init`.
 
 ## 1. What this repo is (one paragraph)
 
@@ -218,14 +293,18 @@ Reuse existing skills for the gate phase: `/code-review`, `/security-review`, `/
 
 ## 2. Always-on hard rules
 
-- User global rules apply (delete / git ops need explicit per-action approval; reply language;
-  privacy paths) — see `~/.claude/CLAUDE.md`; not re-pasted here.
-- **Dependency provenance.** Never add or install a package without grounding it against the live
-  registry first (exists · official, not a look-alike · sane legitimacy signals) — see
+- **Dead rules from `~/.claude/CLAUDE.md` — never bypassed by any spec, phase, or prior
+  approval:** every git operation (branch, commit, push, merge, …) and every delete needs
+  explicit PER-ACTION approval; reply language follows the user; privacy paths are off-limits.
+- **Docs-driven gate.** No development work starts before its `docs/specs/<NNN>-<slug>/` doc
+  set exists and is approved (see harness-engineering Phase 2). Five docs, mandatory;
+  `design.md` only when UI/UX is touched. Docs are written in English.
+- **Dependency provenance.** Never add or install a package without grounding it against the
+  live registry first (exists · official, not a look-alike · sane legitimacy signals) — see
   `/coding-standards` §4. Default installs to non-executing (npm `--ignore-scripts`, PyPI
   `--only-binary=:all:`); installing is an explicit-approval action.
-- <project-specific always-on rules, only if justified — e.g. secrets discipline, a locked list,
-  a "never fabricate X" red line, an architecture invariant>
+- <project-specific always-on rules, only if justified — e.g. secrets discipline, a locked
+  list, a "never fabricate X" red line, an architecture invariant>
 
 ## 3. Coding conventions (non-negotiable)
 
@@ -233,9 +312,29 @@ Reuse existing skills for the gate phase: `/code-review`, `/security-review`, `/
 - <indentation, quote style, comment policy — match the surrounding code>
 - <language rules — e.g. user-facing copy in X, code identifiers in English>
 
-## 4. Open decisions — do NOT decide unilaterally
+## 4. Decision boundary — who decides what
 
-<list design questions with >1 defensible answer; propose 2–3 options and wait>
+**Tier 1 — the user decides. Propose options (with a recommendation), then WAIT:**
+- Direction / scope changes; anything that re-opens a locked decision
+- Approving a spec doc set (Phase 2); any later change to an approved `requirement.md` /
+  `design.md`'s **semantics**
+- UI/UX choices visible to end users — decided in `design.md`, never improvised in code
+- Business-logic **semantics** — changing what the system is *supposed* to do (a bug fix
+  restoring documented/intended behavior is Tier 2; changing the intent is Tier 1)
+- New or bumped dependencies (after the `/coding-standards` §4 verify-before-add gate)
+- **Every git action and every delete — per-action, no exceptions, not pre-approvable by
+  any spec or contract (dead rule from `~/.claude/CLAUDE.md`)**
+- Promoting a lesson to a red line or a hook (Phase 9)
+- Open design questions: <list the repo-specific ones with >1 defensible answer>
+
+**Tier 2 — autonomous inside an approved spec:**
+- Implementing the approved slices; bug fixes restoring intended behavior; tests
+- Doc / skill / LESSONS.md updates that track approved intent (mechanics, not semantics);
+  spec status flips in Phase 9
+- Harness-owned state under `.claude/state/` (create / append / clear)
+
+Ambiguous → Tier 1. No approved spec → no Tier-2 envelope; everything non-trivial waits.
+Settled decisions are documented in their specs and skills — don't reopen them without cause.
 
 ## 5. When in doubt
 
@@ -356,6 +455,226 @@ if __name__ == "__main__":
 Settings reload live (no restart). `python3` is assumed present; if a project is Node-only, port the
 same logic to a Node script and point `command` at it.
 
+## Template E — failure map (`.claude/skills/harness-engineering/LESSONS.md`)
+
+The per-project learning layer: Phase 0 reads it, Phase 9 writes it. Stamp the skeleton below
+only if the file is absent — an existing LESSONS.md is a project asset, keep its entries.
+
+```markdown
+# LESSONS — <repo-name>
+
+Self-maintained by the harness (Phase 0 reads, Phase 9 writes). Keep entries terse; the
+`rule:` line is what Phase 0 applies — imperative and checkable.
+
+**Hygiene (applied at every Phase 9):**
+- Same root cause → bump `hits` on the existing entry; never duplicate.
+- `hits ≥ 2` → propose promotion (Tier 1) to a CLAUDE.md red line or a hook → `status: promoted`.
+- Cap: 30 `active` entries. At the cap, mark the oldest non-recurring entry `status: expired`
+  (kept in the file; physically deleting lines is a delete → user approval).
+- `status: stale` = contradicted by live code (set during Phase 0/4); verify, then fix or expire.
+
+---
+
+## L-001 — <imperative title, e.g. "Check pagination is 1-indexed in the X API">
+- status: active            <!-- active | promoted | stale | expired -->
+- hits: 1                   <!-- times this recurred or prevented a repeat -->
+- dates: <YYYY-MM-DD>
+- surface: <prefix>-<surface>   <!-- routing-table surface; Phase-0 recall filters on this -->
+- symptom: <what was observed, one line>
+- root cause: <why it actually happened, one line>
+- rule: <the prevention rule Phase 0 should apply — one line, imperative>
+```
+
+## Template F — retrospect-guard hook (`.claude/hooks/retrospect-guard.py` + settings merge)
+
+The teeth behind "lessons are written automatically": Phases 6/7 append failures to
+`.claude/state/retrospect-queue.md`; Phase 9 clears it after writing lessons. This Stop hook
+blocks session end (once — it honors `stop_hook_active`, so it can never loop) while the queue
+is non-empty, pointing at the unprocessed failures. `.claude/state/` is harness-owned session
+state: ensure it is gitignored, and creating/clearing it is exempt from approval rules.
+
+**1. Merge into `.claude/settings.json`** (merge — do not overwrite an existing `hooks` block):
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.claude/hooks/retrospect-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking retrospect queue…"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**2. Write `.claude/hooks/retrospect-guard.py`:**
+
+```python
+#!/usr/bin/env python3
+"""Stop hook: block session end while the retrospect queue is non-empty.
+
+harness-engineering Phases 6/7 append failure lines to .claude/state/retrospect-queue.md;
+Phase 9 writes the lessons and clears it. A non-empty queue at Stop means lessons were never
+written — block once and point at them. Honors stop_hook_active so it can never loop.
+"""
+import json, os, sys
+
+def main():
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        sys.exit(0)
+    if data.get("stop_hook_active"):
+        sys.exit(0)
+    queue = os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", "."),
+                         ".claude", "state", "retrospect-queue.md")
+    try:
+        with open(queue) as f:
+            pending = [l.strip() for l in f if l.strip()]
+    except FileNotFoundError:
+        sys.exit(0)
+    if not pending:
+        sys.exit(0)
+    print(json.dumps({
+        "decision": "block",
+        "reason": ("Retrospect pending — run harness-engineering Phase 9 before stopping. "
+                   "Unprocessed failures:\n"
+                   + "\n".join(f"  - {l}" for l in pending[:10])
+                   + "\nWrite/update LESSONS.md entries, then clear "
+                     ".claude/state/retrospect-queue.md."),
+    }))
+
+if __name__ == "__main__":
+    main()
+```
+
+## Template G — spec docs (`docs/specs/README.md` + `docs/specs/_templates/`)
+
+The intent map. Stamp the README and the five skeletons below (one file each under
+`_templates/`); every development task copies them into `docs/specs/<NNN>-<slug>/` at Phase 2.
+
+**`docs/specs/README.md`:**
+
+```markdown
+# Specs — docs-driven development
+
+Every development task in this repo starts with a spec under `docs/specs/<NNN>-<slug>/`
+(NNN increments; slug is short kebab-case). The doc set is written BEFORE any code
+(harness-engineering Phase 2) and approved as ONE set — that approval is the work's contract.
+
+- **Mandatory files per task** — `requirement.md`, `implementation.md`, `testing.md`,
+  `fallback.md`; plus `design.md` whenever the work touches UI/UX. Sections may be short;
+  files may not be skipped.
+- **Lifecycle** — `draft` → `approved` (user gate) → `implemented` (flipped at Phase 9) →
+  `superseded` (abandoned or replaced; one line on why).
+- **Drift rule** — these docs are the *intent map*. Code found contradicting an approved
+  `requirement.md` is a bug or an unapproved decision — flag it; never edit the requirement
+  to match the code.
+- Docs are written in English. Copy the skeletons from `_templates/`.
+```
+
+**`_templates/requirement.md`:**
+
+```markdown
+# Requirement — <feature>
+
+- **Status:** draft <!-- draft | approved | implemented | superseded -->
+- **Spec:** <NNN>-<slug>
+
+## Problem / why now
+<one paragraph>
+
+## In scope
+- <bullet>
+
+## Out of scope
+- <bullet — as load-bearing as in-scope>
+
+## Acceptance criteria
+1. <testable — these become testing.md's spine>
+
+## Delegated decisions
+<choices the user explicitly delegated during grilling, each with the recommendation taken>
+
+## Open questions
+<must be EMPTY before status can be approved>
+```
+
+**`_templates/design.md`** (only when the work touches UI/UX):
+
+```markdown
+# Design — <feature>
+
+## Flows
+<entry → steps → exit, per flow>
+
+## Layout & states
+<per screen/component — default / loading / empty / error>
+
+## Copy
+<user-facing text, language(s)>
+
+## Decided by user
+<the Tier-1 UI choices made here, one line each>
+```
+
+**`_templates/implementation.md`:**
+
+```markdown
+# Implementation — <feature>
+
+- **Proposed branch:** <name — creating it is a git action, approved per-action at Phase 8>
+
+## Slices
+1. <smallest shippable slice → touched surface(s) → routing-table skill(s)>
+
+## Authorized Tier-2 actions
+<implementation edits, tests, doc updates — never git actions or deletes>
+
+## Deviation log
+<appended during Phase 5 — mechanics-only deviations that keep the approved intent>
+```
+
+**`_templates/testing.md`:**
+
+```markdown
+# Testing — <feature>
+
+Phase 6 runs this file top to bottom. A criterion without a verification method is not a criterion.
+
+## Slice 1 — <name>
+- [ ] <criterion> — verify via <command / /verify scenario / manual step>
+```
+
+**`_templates/fallback.md`:**
+
+```markdown
+# Fallback — <feature>
+
+Written BEFORE implementation, while calm. Executed (with per-action approvals) on a
+circuit-breaker trip or a post-ship failure.
+
+## Blast radius
+<what breaks for whom if this goes wrong>
+
+## Detection
+<the signals that tell us it broke>
+
+## Rollback procedure
+1. <numbered, concrete — revert range / flag off / redeploy previous / data reversal.
+   Every git action or delete in here still needs its own approval when executed.>
+
+## Verified
+- [ ] procedure actually executed or rehearsed at least once
+```
+
 ## What this skill does NOT do
 
-It does not lay down the directory tree, Docker, or devlog scaffold — that's `/dev-init`. It does not run the work loop — the generated `harness-engineering` does that. It only generates the per-project context layer (the local orchestrator + CLAUDE.md + domain skills) so the project is self-contained.
+It does not lay down the directory tree, Docker, or devlog scaffold — that's `/dev-init`. It does not run the work loop — the generated `harness-engineering` does that. It does not clarify requirements — that's `/grill-me`, invoked by the engine's Phase 1. It only generates the per-project context layer (the local orchestrator + LESSONS.md + CLAUDE.md + domain skills + spec templates + hooks) so the project is self-contained.

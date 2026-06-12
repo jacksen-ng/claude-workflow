@@ -5,6 +5,58 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.6.0] - 2026-06-12
+### Added
+- **Docs-driven development gate.** Engine Phase 2 is now a Spec phase: every development task —
+  however small — writes a `docs/specs/<NNN>-<slug>/` doc set BEFORE any code (`requirement.md`,
+  `implementation.md`, `testing.md`, `fallback.md`, plus `design.md` whenever UI/UX is touched;
+  the docs scale down in length, never in count). The approved SET is the work's contract
+  (one approval gate, not five); Phase 6 executes `testing.md` literally; a breaker trip
+  executes `fallback.md` (written before implementation, while calm). New **Template G** stamps
+  `docs/specs/README.md` + `_templates/` skeletons. Spec docs are the *intent map* — code
+  contradicting an approved requirement is FLAGGED to the user, never blessed by editing the doc.
+- **Learning loop (self-iteration).** New engine **Phase 0 (Recall)** reads a per-project
+  `.claude/skills/harness-engineering/LESSONS.md` (new **Template E** — failure map with
+  status / hits / surface fields, recall filtered by routing surface, 30-active cap); new
+  **Phase 9 (Retrospect)** writes it on any verify failure, gate finding, ground drift, breaker
+  trip, or user correction — deduped by root cause, never ritual entries. A lesson with
+  `hits ≥ 2` is proposed (Tier 1) for promotion to a CLAUDE.md red line or a hook
+  (lesson → rule → enforcement, the same path the install-guard took). Workflow-level lessons
+  are mirrored to global auto-memory; project lessons travel with the repo.
+- **Retrospect-guard Stop hook** (new **Template F**): Phases 6/7 append failures to
+  `.claude/state/retrospect-queue.md`; a Stop hook blocks session end (once — honors
+  `stop_hook_active`, can never loop) while the queue is non-empty, so "lessons are written
+  automatically" is enforced mechanically, not by model goodwill. `.claude/state/` is
+  gitignored harness-owned state.
+- **Circuit breaker:** at most 3 self-correction cycles per slice, then STOP — report the full
+  failure trail, propose the `fallback.md` rollback (each git/delete step still per-action
+  approved), escalate as Tier 1; a trip always yields a lesson and a fallback.md review.
+- **`/grill-me` bundled skill** (vendored from `mattpocock/skills`, MIT, with attribution),
+  wired into engine Phase 1 as a **clarity gate**: a requirement that can't be written without
+  guessing triggers an interview — ONE question at a time, each with a recommended answer;
+  codebase-answerable questions are explored, not asked; low-stakes choices take the
+  recommendation as recorded "delegated decisions". Mechanical exit (requirement.md writes
+  itself / user says "按你推荐的来") — never endless interrogation.
+- **Decision boundary** (CLAUDE.md Template B §4): Tier 1 = the user decides (direction/scope,
+  spec-set approval, UI/UX in `design.md`, business-logic *semantics*, dependencies, every git
+  action and delete, lesson promotion); Tier 2 = autonomous inside an approved spec
+  (implementing approved slices, intent-restoring bug fixes, tests, doc/lesson updates).
+  Ambiguous → Tier 1. The semantics line: restoring documented intent is Tier 2; changing
+  intent is Tier 1.
+### Changed
+- **Git/delete approval codified as a dead rule:** per-action, no exceptions, never
+  pre-approvable by any spec/contract/phase. Engine Phase 8 presents branch/commit/push as a
+  batch *proposal* but executes each only on its own approval. (Autonomous feature-branch
+  commits were considered during design and explicitly rejected by the user.)
+- Engine template marker bumped 0.5.0 → 0.6.0. `templates/harness-engineering.SKILL.md.template`
+  and `templates/CLAUDE.md.template` reconciled to the canonical embedded Templates A/B; the new
+  Templates E/F/G live only embedded in `harness-init` (single source of truth, no new mirrors).
+- `harness-init` Step 1 now also inventories `docs/` (an existing spec/RFC/ADR convention is
+  reconciled with, not duplicated); Step 3 recognizes a v0.5.x engine as **UPDATE (propose)**
+  listing the six v0.6.0 mechanism deltas, and treats an existing `LESSONS.md` / populated
+  `docs/specs/` as project assets (KEEP entries, upgrade only the machinery). README gained an
+  "Upgrading an existing project" section documenting re-run-`harness-init` as the upgrade path.
+
 ## [0.5.0] - 2026-06-03
 ### Added
 - Supply-chain hardening against package hallucination / **slopsquatting** (attackers pre-register
