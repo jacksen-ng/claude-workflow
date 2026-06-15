@@ -6,8 +6,8 @@ skills under `.claude/skills/` (progressive disclosure — loaded only when a ta
 surface, keeping this file small as the project grows).
 
 **Start every development task through the `harness-engineering` skill** — it runs the
-docs-driven closed loop (recall → intake/grill → five-doc spec gate → dispatch → ground →
-implement → verify → gate → per-action approvals → retrospect) and routes to the right
+docs-driven closed loop (recall → intake → decompose/grill → five-doc spec gate → dispatch →
+ground → implement → verify → gate → per-action approvals → retrospect) and routes to the right
 domain skill(s).
 
 ---

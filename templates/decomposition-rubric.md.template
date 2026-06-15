@@ -1,0 +1,44 @@
+# Decomposition Rubric — requirement → impact map
+
+Used by `harness-engineering` **Phase 1.5 (Decompose)**. This is a *lens for finding what you
+don't know*, not a form to fill exhaustively. Walk only the surfaces the requirement plausibly
+touches; for each dimension, triage into **known** (the user stated it) / **inferable** (resolve
+by reading the live code, not by asking) / **must-ask** (genuinely changes what's built AND can't
+be inferred → becomes a `/grill-me` question). The filled result is the **impact map** — the
+normalized requirement that becomes `requirement.md`'s Impact-map section and seeds the rest of
+the doc set.
+
+Keep it proportional: a one-line CSS tweak resolves most dimensions as "n/a" in a sentence; a
+cross-stack feature genuinely exercises all four blocks. Raise a dimension as **must-ask** only
+when its answer changes the build and can't be inferred — don't spend a question on a default.
+
+## Frontend / UX  (only when UI is touched → also drives design.md)
+- **Placement & entry** — where on the page/flow does it live; how is it reached?
+- **Component strategy** — reuse an existing component or build new? which one?
+- **Visual** — icon needed? colors/spacing from existing theme tokens (not ad-hoc values)?
+- **States** — default / loading / empty / error each defined?
+- **Copy & i18n** — exact user-facing text; which languages?
+- **State management** — local vs shared/global; source of truth; persisted across reloads?
+- **Purpose & success signal** — what is this for; how do we know it worked?
+- **Ripple** — what existing UI/component/logic does it touch or risk breaking?
+
+## Backend / API  (→ drives implementation.md slices)
+- **New endpoints** — method, path, request/response shape, auth/authz.
+- **Existing-API impact** — does any current contract change? breaking? needs versioning?
+- **Business rules & validation** — the logic and its edge cases.
+- **Errors & idempotency** — failure modes, retries, idempotency where it matters.
+- **Performance & cost** — heavy queries, N+1, paid / third-party API calls and their cost.
+
+## Data / DB  (skip the whole block if no data layer is touched)
+- **Schema change** — new tables / columns / enums?
+- **Migration?** — needed or not? plan BOTH forward and backward.
+- **Existing-data impact** — backfill? default values? nullable? does it break in-flight rows?
+- **Migration safety** — table locks, downtime, online vs offline, reversibility.
+- **Indexes & constraints** — new indexes, foreign keys, uniqueness.
+
+## Cross-cutting  (scan every time)
+- **Dependencies** — any new package? → `/coding-standards` §4 verify-before-add gate (privileged).
+- **Security** — authz, secrets, PII, input trust boundary.
+- **Observability** — logs / metrics / traces needed to know it works in prod?
+- **Rollout** — feature flag? phased? migration ordering vs deploy?
+- **Blast radius** — what breaks for whom if this goes wrong? → seeds fallback.md.

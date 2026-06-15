@@ -5,6 +5,32 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.7.0] - 2026-06-15
+### Added
+- **Decompose phase (engine Phase 1.5).** Between Intake and the spec gate, the engine now turns a
+  (possibly vague) requirement into a structured **impact map** BEFORE any doc is written: walk the
+  touched surfaces, triage every dimension into known / inferable-from-code / must-ask, and let the
+  must-ask set drive `/grill-me`. Cross-surface effects are first-class — existing-API contract
+  changes, migrations and their effect on existing data, and state / shared-logic ripples are
+  surfaced even when the user never mentioned them. The resolved impact map is the normalized
+  requirement that seeds the whole doc set (UI → design.md, surfaces → implementation.md, blast
+  radius → fallback.md).
+- **`decomposition-rubric.md` reference** (new **Template H**), written next to the engine — a
+  by-surface dimension checklist (Frontend/UX · Backend/API · Data/DB · Cross-cutting) used as a
+  lens for finding unknowns, scaled to the change rather than filled as a form. Mirrored as
+  `templates/decomposition-rubric.md.template`.
+- **`requirement.md` gains an Impact-map section** (Template G) — the persisted, reviewable
+  normalized requirement; the rest of the doc set expands from it.
+### Changed
+- Engine Phase 1's clarity gate now hands off to Phase 1.5; the loop one-liners and the engine
+  description read recall → intake → decompose/grill → spec gate → … . Existing integer phase
+  numbers are unchanged (Decompose slots in as 1.5), so the spec gate stays Phase 2 and the verify
+  gates stay 6–7.
+- Engine template marker bumped 0.6.0 → 0.7.0; standalone `templates/harness-engineering.SKILL.md.template`
+  and `templates/CLAUDE.md.template` kept in sync with the canonical embedded Templates A/B.
+- harness-init reconcile: a **v0.6.x engine** is an **UPDATE (propose)** — add Phase 1.5, write
+  `decomposition-rubric.md`, and add the Impact-map section to `requirement.md`.
+
 ## [0.6.0] - 2026-06-12
 ### Added
 - **Docs-driven development gate.** Engine Phase 2 is now a Spec phase: every development task —

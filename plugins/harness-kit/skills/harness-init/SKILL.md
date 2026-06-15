@@ -1,13 +1,13 @@
 ---
 name: harness-init
-description: Bootstrap a project to use the docs-driven harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates the full context layer into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine with recall/retrospect learning, self-contained) plus its LESSONS.md failure map, (2) a thin CLAUDE.md (always-on rules + decision boundary + routing table), (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template, (4) spec-doc templates under docs/specs/ for the mandatory five-doc gate (requirement / design / implementation / testing / fallback), and (5) enforcement hooks (install-guard, retrospect-guard). If the repo already has skills, a CLAUDE.md, or docs, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
+description: Bootstrap a project to use the docs-driven harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates the full context layer into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine with recall/retrospect learning, self-contained) plus its LESSONS.md failure map and decomposition-rubric.md, (2) a thin CLAUDE.md (always-on rules + decision boundary + routing table), (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template, (4) spec-doc templates under docs/specs/ for the mandatory five-doc gate (requirement / design / implementation / testing / fallback), and (5) enforcement hooks (install-guard, retrospect-guard). If the repo already has skills, a CLAUDE.md, or docs, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
 ---
 
 # Harness Init — Project Bootstrapper
 
 One-shot setup that stamps the user's reusable workflow onto a repo. The goal: after running this, the repo is **self-contained** — it has its own local `harness-engineering` orchestrator that runs the docs-driven closed loop (spec gate → implement → verify → retrospect), learns from its own failures via LESSONS.md, and routes to thin per-domain skills, exactly like the user's mature projects, without depending on any global skill.
 
-This is the **context layer** (a local orchestrator + LESSONS.md + CLAUDE.md + domain skills + spec-doc templates + two enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
+This is the **context layer** (a local orchestrator + LESSONS.md + decomposition rubric + CLAUDE.md + domain skills + spec-doc templates + two enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
 
 **Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *templates* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own.
 
@@ -46,7 +46,7 @@ Skip on a fresh repo (no existing skills — everything is simply "new"). Otherw
 | A code surface with no skill yet | **NEW** — generate a domain skill |
 | A skill for a surface no longer in the code | **FLAG** — list it, do NOT delete; ask the user |
 
-**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
+**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. A **v0.6.x engine** additionally lacks the v0.7.0 **Phase 1.5 (Decompose)**: **UPDATE (propose)** — add the Decompose phase, write the new `decomposition-rubric.md` next to the engine, and add the **Impact map** section to `requirement.md`. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
 
 This step only decides; it writes nothing.
 
@@ -60,6 +60,7 @@ Show one consolidated plan: the prefix; **KEEP** (list), **UPDATE** (list + what
 
 - **NEW domain skills** → write from Template C, with real anchors from Step 1 and the chosen prefix.
 - **Local orchestrator** → if `harness-engineering` doesn't exist, write it from Template A with the Routing table pointing at the reconciled skill set; if it exists, apply only the approved edits. Fill its `<repo-name>`, the routing rows, the Phase-1 **project red lines** (only ones justified by the repo or stated by the user), and any custom agents from `.claude/agents/` as dispatch targets.
+- **Decomposition rubric** → write `.claude/skills/harness-engineering/decomposition-rubric.md` from Template H (always — it's generic, not project-specific; Phase 1.5 reads it). If it already exists, leave it (a project may have refined it with new dimensions).
 - **Failure map** → if `.claude/skills/harness-engineering/LESSONS.md` is absent, stamp the Template E skeleton. If present, it is a project asset — keep every entry; never regenerate.
 - **CLAUDE.md** → if absent, write a thin one from Template B (routing table = the reconciled skills); if present, apply only the approved merge — do not overwrite.
 - **Spec layer** → if `docs/specs/` is absent, stamp Template G (`docs/specs/README.md` + the `_templates/` skeletons). If the repo already has an equivalent spec convention, reconcile: reuse its structure, map it in the engine's Phase 2 wording, don't impose a duplicate.
@@ -76,10 +77,10 @@ Creating or editing these files needs no git action. Do **not** commit — every
 ```markdown
 ---
 name: harness-engineering
-description: Orchestration entry point for <repo-name>. Use this skill at the START of any development task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a docs-driven closed loop — recall lessons, intake guardrails (grilling vague requirements via /grill-me), a mandatory five-doc spec gate (requirement / design / implementation / testing / fallback), on-demand domain skill loading, grounding against live code, implementation, verification against testing.md, a quality/security gate, per-action git approval, and a retrospect that writes LESSONS.md. Routes to the <prefix>-* domain skills and reuses /grill-me, /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
+description: Orchestration entry point for <repo-name>. Use this skill at the START of any development task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a docs-driven closed loop — recall lessons, intake guardrails, decompose the requirement into an impact map (grilling the gaps via /grill-me), a mandatory five-doc spec gate (requirement / design / implementation / testing / fallback), on-demand domain skill loading, grounding against live code, implementation, verification against testing.md, a quality/security gate, per-action git approval, and a retrospect that writes LESSONS.md. Routes to the <prefix>-* domain skills and reuses /grill-me, /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
 ---
 
-<!-- harness-engineering template v0.6.0 — generated by harness-init; re-run harness-init to refresh -->
+<!-- harness-engineering template v0.7.0 — generated by harness-init; re-run harness-init to refresh -->
 
 # harness-engineering — <repo-name> Orchestrator
 
@@ -132,13 +133,29 @@ rule); list the ones this task will need so the user sees them coming.
 §4 verify-before-add gate (exists in the registry · is the official package, not a look-alike ·
 sane legitimacy signals) BEFORE it lands in any manifest. Installing is privileged and
 effectively irreversible (lifecycle scripts run attacker code at install time) — per-action approval.
-(6) **Clarity gate** — can every section of `requirement.md` be filled from what the user said,
-without guessing? If yes → Phase 2. If not → invoke `/grill-me`: ONE question at a time, each
-with your recommended answer; a question answerable from the codebase is answered by exploring,
-not by asking. Do NOT interrogate endlessly — take your own recommendation on low-stakes
-choices and record them in the doc as delegated decisions; ask the user only what genuinely
-changes what gets built. Exit as soon as the requirement doc writes itself, or the user
-delegates the rest ("按你推荐的来") — delegations are recorded in the doc, never silent.
+(6) **Clarity** — hand the requirement to Phase 1.5 (Decompose): it builds the impact map and
+grills any gaps before the spec gate. Even a fully-specified requirement passes through for a
+quick confirm; a vague one ("加个功能") is where Decompose earns its keep.
+
+### Phase 1.5 — Decompose (build the impact map, grill the gaps)
+Turn the (possibly vague) requirement into a structured **impact map** before any doc is written —
+this is the normalized intent the rest of the loop runs on. Open `decomposition-rubric.md` (same
+directory) and walk only the surfaces the requirement plausibly touches (skip the Data/DB block
+entirely if no data layer is involved, etc.). Triage every dimension into one bucket:
+- **known** — the user already stated it; record it.
+- **inferable** — answerable from live code/specs; resolve by exploring (Read/Grep/Explore), not
+  by asking; record the answer and where you found it.
+- **must-ask** — genuinely changes what gets built and can't be inferred → it becomes a question.
+The must-ask set is the agenda for `/grill-me`: ONE question at a time, each with your recommended
+answer; low-stakes choices take the recommendation as a recorded **delegated decision**, never
+silently. Cross-surface implications are first-class here — surface every existing-API contract
+change, every migration and its effect on existing data, and every state-management or
+shared-logic ripple, even when the user never mentioned them.
+**Exit (mechanical):** the impact map has no open questions left — every dimension is known,
+inferred, asked, or explicitly delegated. That resolved impact map IS the normalized requirement:
+in Phase 2 it lands as the **Impact map** section of `requirement.md` and seeds the rest of the
+set (UI dimensions → design.md, touched surfaces → implementation.md, blast radius → fallback.md).
+Scope ballooning past what Intake framed → STOP, back to Phase 1.
 
 ### Phase 2 — Spec (docs ARE the contract — written BEFORE any code)
 Create `docs/specs/<NNN>-<slug>/` from `docs/specs/_templates/` and draft the full set. The
@@ -270,8 +287,8 @@ skills under `.claude/skills/` (progressive disclosure — loaded only when a ta
 surface).
 
 **Start every development task through the `harness-engineering` skill** — it runs the
-docs-driven closed loop (recall → intake/grill → five-doc spec gate → dispatch → ground →
-implement → verify → gate → per-action approvals → retrospect) and routes to the right
+docs-driven closed loop (recall → intake → decompose/grill → five-doc spec gate → dispatch →
+ground → implement → verify → gate → per-action approvals → retrospect) and routes to the right
 domain skill(s).
 
 ## Routing table — where the detail lives
@@ -597,6 +614,14 @@ Every development task in this repo starts with a spec under `docs/specs/<NNN>-<
 ## Out of scope
 - <bullet — as load-bearing as in-scope>
 
+## Impact map (decomposition — from Phase 1.5)
+The normalized, de-vagued requirement: per touched surface, the resolved dimensions; cross-surface
+effects called out explicitly. Untouched surfaces get a one-line "n/a".
+- **Frontend/UX:** <resolved dimensions, or n/a>
+- **Backend/API:** <…, incl. impact on existing APIs>
+- **Data/DB:** <…, incl. migration + effect on existing data, or n/a>
+- **Cross-cutting:** <deps / security / observability / rollout / blast radius>
+
 ## Acceptance criteria
 1. <testable — these become testing.md's spine>
 
@@ -675,6 +700,60 @@ circuit-breaker trip or a post-ship failure.
 - [ ] procedure actually executed or rehearsed at least once
 ```
 
+## Template H — decomposition rubric (`.claude/skills/harness-engineering/decomposition-rubric.md`)
+
+The lens behind **Phase 1.5 (Decompose)**: a by-surface dimension checklist the engine walks to
+turn a vague requirement into an impact map. It is generic — stamp it verbatim next to the engine
+(not project-specific; a project refines it only as it learns new dimensions). Written always,
+like the engine itself.
+
+```markdown
+# Decomposition Rubric — requirement → impact map
+
+Used by `harness-engineering` **Phase 1.5 (Decompose)**. This is a *lens for finding what you
+don't know*, not a form to fill exhaustively. Walk only the surfaces the requirement plausibly
+touches; for each dimension, triage into **known** (the user stated it) / **inferable** (resolve
+by reading the live code, not by asking) / **must-ask** (genuinely changes what's built AND can't
+be inferred → becomes a `/grill-me` question). The filled result is the **impact map** — the
+normalized requirement that becomes `requirement.md`'s Impact-map section and seeds the rest of
+the doc set.
+
+Keep it proportional: a one-line CSS tweak resolves most dimensions as "n/a" in a sentence; a
+cross-stack feature genuinely exercises all four blocks. Raise a dimension as **must-ask** only
+when its answer changes the build and can't be inferred — don't spend a question on a default.
+
+## Frontend / UX  (only when UI is touched → also drives design.md)
+- **Placement & entry** — where on the page/flow does it live; how is it reached?
+- **Component strategy** — reuse an existing component or build new? which one?
+- **Visual** — icon needed? colors/spacing from existing theme tokens (not ad-hoc values)?
+- **States** — default / loading / empty / error each defined?
+- **Copy & i18n** — exact user-facing text; which languages?
+- **State management** — local vs shared/global; source of truth; persisted across reloads?
+- **Purpose & success signal** — what is this for; how do we know it worked?
+- **Ripple** — what existing UI/component/logic does it touch or risk breaking?
+
+## Backend / API  (→ drives implementation.md slices)
+- **New endpoints** — method, path, request/response shape, auth/authz.
+- **Existing-API impact** — does any current contract change? breaking? needs versioning?
+- **Business rules & validation** — the logic and its edge cases.
+- **Errors & idempotency** — failure modes, retries, idempotency where it matters.
+- **Performance & cost** — heavy queries, N+1, paid / third-party API calls and their cost.
+
+## Data / DB  (skip the whole block if no data layer is touched)
+- **Schema change** — new tables / columns / enums?
+- **Migration?** — needed or not? plan BOTH forward and backward.
+- **Existing-data impact** — backfill? default values? nullable? does it break in-flight rows?
+- **Migration safety** — table locks, downtime, online vs offline, reversibility.
+- **Indexes & constraints** — new indexes, foreign keys, uniqueness.
+
+## Cross-cutting  (scan every time)
+- **Dependencies** — any new package? → `/coding-standards` §4 verify-before-add gate (privileged).
+- **Security** — authz, secrets, PII, input trust boundary.
+- **Observability** — logs / metrics / traces needed to know it works in prod?
+- **Rollout** — feature flag? phased? migration ordering vs deploy?
+- **Blast radius** — what breaks for whom if this goes wrong? → seeds fallback.md.
+```
+
 ## What this skill does NOT do
 
-It does not lay down the directory tree, Docker, or devlog scaffold — that's `/dev-init`. It does not run the work loop — the generated `harness-engineering` does that. It does not clarify requirements — that's `/grill-me`, invoked by the engine's Phase 1. It only generates the per-project context layer (the local orchestrator + LESSONS.md + CLAUDE.md + domain skills + spec templates + hooks) so the project is self-contained.
+It does not lay down the directory tree, Docker, or devlog scaffold — that's `/dev-init`. It does not run the work loop — the generated `harness-engineering` does that. It does not clarify requirements — that's `/grill-me`, invoked by the engine's Phase 1. It only generates the per-project context layer (the local orchestrator + LESSONS.md + decomposition rubric + CLAUDE.md + domain skills + spec templates + hooks) so the project is self-contained.

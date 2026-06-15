@@ -1,6 +1,6 @@
 {
   "name": "harness-kit",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Jacksen's personal docs-driven closed-loop dev workflow: a project bootstrapper that stamps a local harness-engineering orchestrator (five-doc spec gate, LESSONS.md learning loop, enforcement hooks) + domain skills into each repo, plus scaffold / coding-standards / git-commit / grill-me skills.",
   "author": {
     "name": "jacksen-ng"
