@@ -5,10 +5,10 @@ Thin context guide for `<repo-name>`. Holds only the **always-on hard rules**, t
 skills under `.claude/skills/` (progressive disclosure — loaded only when a task hits that
 surface, keeping this file small as the project grows).
 
-**Start every development task through the `harness-engineering` skill** — it runs the
+**Start every development task with the `/harness` command** — it runs the `harness-engineering`
 docs-driven closed loop (recall → intake → decompose/grill → five-doc spec gate → dispatch →
 ground → implement → verify → gate → per-action approvals → retrospect) and routes to the right
-domain skill(s).
+domain skill(s). (The skill also auto-triggers as a backstop if a task starts without `/harness`.)
 
 ---
 

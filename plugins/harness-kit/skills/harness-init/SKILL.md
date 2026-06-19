@@ -9,7 +9,7 @@ One-shot setup that stamps the user's reusable workflow onto a repo. The goal: a
 
 This is the **context layer** (a local orchestrator + LESSONS.md + decomposition rubric + CLAUDE.md + domain skills + spec-doc templates + two enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
 
-**Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *templates* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own.
+**Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *templates* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own. (Two pieces *are* plugin-global and NOT stamped per-project: the `/harness` command — the deterministic entry that loads whatever local engine it finds — and the `db-guard` delete-safety hook. harness-init neither generates nor reconciles those.)
 
 ## Operating principle
 
@@ -46,7 +46,7 @@ Skip on a fresh repo (no existing skills — everything is simply "new"). Otherw
 | A code surface with no skill yet | **NEW** — generate a domain skill |
 | A skill for a surface no longer in the code | **FLAG** — list it, do NOT delete; ask the user |
 
-**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. A **v0.6.x engine** additionally lacks the v0.7.0 **Phase 1.5 (Decompose)**: **UPDATE (propose)** — add the Decompose phase, write the new `decomposition-rubric.md` next to the engine, and add the **Impact map** section to `requirement.md`. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
+**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. A **v0.6.x engine** additionally lacks the v0.7.0 **Phase 1.5 (Decompose)**: **UPDATE (propose)** — add the Decompose phase, write the new `decomposition-rubric.md` next to the engine, and add the **Impact map** section to `requirement.md`. A **v0.7.x engine** additionally lacks the v0.8.0 pieces: **UPDATE (propose)** — record test runs into `testresults.md` at Phase 6 (and stamp the new `_templates/testresults.md` skeleton), and name `/harness` as the primary entry in the engine description and the generated `CLAUDE.md` (skill auto-trigger stays a backstop). The `/harness` command and the `db-guard` hook are plugin-global — they arrive via `/plugin marketplace update`, NOT via this per-project stamp. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
 
 This step only decides; it writes nothing.
 
@@ -77,10 +77,10 @@ Creating or editing these files needs no git action. Do **not** commit — every
 ```markdown
 ---
 name: harness-engineering
-description: Orchestration entry point for <repo-name>. Use this skill at the START of any development task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a docs-driven closed loop — recall lessons, intake guardrails, decompose the requirement into an impact map (grilling the gaps via /grill-me), a mandatory five-doc spec gate (requirement / design / implementation / testing / fallback), on-demand domain skill loading, grounding against live code, implementation, verification against testing.md, a quality/security gate, per-action git approval, and a retrospect that writes LESSONS.md. Routes to the <prefix>-* domain skills and reuses /grill-me, /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
+description: Orchestration entry point for <repo-name>. Normally invoked via the `/harness` command; also auto-triggers as a backstop at the START of any development task ("帮我做…", "实现…", "加一个…", "改一下…", refactors, deploys, cross-file debugging). It runs a docs-driven closed loop — recall lessons, intake guardrails, decompose the requirement into an impact map (grilling the gaps via /grill-me), a mandatory five-doc spec gate (requirement / design / implementation / testing / fallback), on-demand domain skill loading, grounding against live code, implementation, verification against testing.md, a quality/security gate, per-action git approval, and a retrospect that writes LESSONS.md. Routes to the <prefix>-* domain skills and reuses /grill-me, /code-review, /security-review, /verify, /run, /git-commit, /coding-standards, /dev-init.
 ---
 
-<!-- harness-engineering template v0.7.0 — generated by harness-init; re-run harness-init to refresh -->
+<!-- harness-engineering template v0.8.0 — generated by harness-init; re-run harness-init to refresh -->
 
 # harness-engineering — <repo-name> Orchestrator
 
@@ -201,7 +201,8 @@ requirement/design **semantics** → STOP, Tier 1, re-approve before proceeding.
 ### Phase 6 — Verify (separate generation from evaluation)
 Don't let the context that wrote the code judge it done. Run `testing.md` literally — every
 criterion, by its stated method (a criterion without a method is not a criterion); check each
-off in the doc as it passes. Report failures with output; never claim verified without running
+off in the doc as it passes. Record the run into `docs/specs/<NNN>-<slug>/testresults.md` (per
+criterion: method, pass/fail, evidence). Report failures with output; never claim verified without running
 something. On any failure, append one line `phase 6 | <slice> | <one-line symptom>` to
 `.claude/state/retrospect-queue.md` (create if absent — harness-owned state, exempt from
 approval rules, never committed), then take the back-edge (Loop control).
@@ -286,10 +287,10 @@ Thin context guide for `<repo-name>`. Holds only the **always-on hard rules**, t
 skills under `.claude/skills/` (progressive disclosure — loaded only when a task hits that
 surface).
 
-**Start every development task through the `harness-engineering` skill** — it runs the
+**Start every development task with the `/harness` command** — it runs the `harness-engineering`
 docs-driven closed loop (recall → intake → decompose/grill → five-doc spec gate → dispatch →
 ground → implement → verify → gate → per-action approvals → retrospect) and routes to the right
-domain skill(s).
+domain skill(s). (The skill also auto-triggers as a backstop if a task starts without `/harness`.)
 
 ## Routing table — where the detail lives
 
@@ -589,6 +590,8 @@ Every development task in this repo starts with a spec under `docs/specs/<NNN>-<
 - **Mandatory files per task** — `requirement.md`, `implementation.md`, `testing.md`,
   `fallback.md`; plus `design.md` whenever the work touches UI/UX. Sections may be short;
   files may not be skipped.
+- **Phase-6 output** — `testresults.md` is written during verification (Phase 6), recording the
+  run of `testing.md`. It is the OUTPUT of testing, NOT one of the docs approved at the gate.
 - **Lifecycle** — `draft` → `approved` (user gate) → `implemented` (flipped at Phase 9) →
   `superseded` (abandoned or replaced; one line on why).
 - **Drift rule** — these docs are the *intent map*. Code found contradicting an approved
@@ -698,6 +701,29 @@ circuit-breaker trip or a post-ship failure.
 
 ## Verified
 - [ ] procedure actually executed or rehearsed at least once
+```
+
+**`_templates/testresults.md`** (a Phase-6 *output*, not part of the approval gate — written
+during verification, not before code):
+
+```markdown
+# Test Results — <feature>
+
+Written during Phase 6 (Verify): the record of running `testing.md`. This is the OUTPUT of
+verification, not one of the docs approved at the spec gate.
+
+- **Spec:** <NNN>-<slug>
+- **Run date:** <YYYY-MM-DD>
+- **Result:** <all passed | N failed>
+
+## Per criterion
+| Slice / criterion | Method | Result | Evidence |
+|---|---|---|---|
+| <criterion> | <command / /verify / manual step> | ✅ / ❌ | <output snippet or note> |
+
+## Failures & follow-up
+<for each ❌: symptom, suspected cause, the back-edge taken (re-Ground / re-Implement), and the
+LESSONS.md entry queued. Empty if all passed.>
 ```
 
 ## Template H — decomposition rubric (`.claude/skills/harness-engineering/decomposition-rubric.md`)

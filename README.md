@@ -9,6 +9,8 @@ owning its own engine — no rebuilding it by hand each time.
 
 ```
 plugin: harness-kit  (install once, available globally)
+├── /harness          ← command: deterministic entry — drives the repo's local engine (Phases 0–9)
+├── db-guard hook     ← plugin-global PreToolUse — asks before destructive DB ops (DROP/TRUNCATE/…)
 ├── harness-init      ← bootstrapper: explore repo → stamp the workflow into it
 ├── dev-init          ← directory / Docker / devlog scaffold
 ├── coding-standards  ← engineering operating principles
@@ -56,7 +58,9 @@ After install, the skills are **user-global** (stored under `~/.claude/plugins/c
 1. (Optional, greenfield) `dev-init` — lay down the directory / Docker / devlog scaffold.
 2. `harness-init` — explores the repo and stamps in: a local `harness-engineering` orchestrator,
    a thin `CLAUDE.md`, and one domain skill per surface — for your review.
-3. From then on, any non-trivial task in that repo flows through its own `harness-engineering`.
+3. From then on, run any non-trivial task with **`/harness <requirement>`** — the deterministic
+   entry that drives that repo's own `harness-engineering` loop (the skill also auto-triggers as a
+   backstop).
 
 ## Update loop (how edits take effect)
 
@@ -100,4 +104,6 @@ reconcile path is the upgrader:
 | `.claude-plugin/marketplace.json` | marketplace manifest (name: `jack-workflow`) |
 | `plugins/harness-kit/.claude-plugin/plugin.json` | plugin manifest (name: `harness-kit`, semver) |
 | `plugins/harness-kit/skills/*` | the 5 bundled skills (harness-init, dev-init, coding-standards, git-commit, grill-me) |
+| `plugins/harness-kit/commands/harness.md` | the global `/harness` command — deterministic loop entry |
+| `plugins/harness-kit/hooks/` | plugin-global delete-safety: `db-guard.py` + `hooks.json` (PreToolUse) |
 | `plugins/harness-kit/skills/harness-init/SKILL.md` | embeds Template A (engine) / B (CLAUDE.md) / C (domain skill) / D (install-guard) / E (LESSONS.md) / F (retrospect-guard) / G (spec docs) — the single source the bootstrapper stamps from |

@@ -5,6 +5,36 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.8.0] - 2026-06-19
+### Added
+- **`/harness` command (deterministic loop entry).** A plugin-global slash command — type
+  `/harness <requirement>` to run the docs-driven closed loop, instead of relying on the
+  `harness-engineering` skill's probabilistic description-based auto-trigger. It loads the repo's
+  local engine and follows Phases 0–9; in a non-bootstrapped repo it runs a compact generic loop
+  and recommends `/harness-init`. The engine stays the single source of truth — the command is a
+  thin front door, not a second copy of the loop.
+- **`db-guard` delete-safety hook (plugin-global).** A `PreToolUse` hook (`hooks/db-guard.py` +
+  `hooks/hooks.json`) that intercepts destructive DB operations in Bash commands — `DROP TABLE`,
+  `DROP DATABASE/SCHEMA`, `TRUNCATE`, `DELETE FROM`, destructive migration verbs (prisma migrate
+  reset, alembic downgrade, knex/sequelize rollback, db:drop, migrate down, django flush), and
+  `rm` on `*.db/*.sqlite` files — and returns an "ask" decision, so the "all DB deletes need
+  approval" dead rule is enforced mechanically rather than by model goodwill. Conservative: it
+  asks, never hard-denies; benign commands pass through silently. Same pattern as install-guard,
+  but plugin-global so it protects every repo, bootstrapped or not.
+- **`testresults.md` (Phase-6 output).** New `_templates/testresults.md` skeleton (Template G) —
+  a per-criterion pass/fail record written during verification. It is an OUTPUT of testing, not
+  one of the five docs approved at the spec gate; the engine's Phase 6 now records each run into it.
+### Changed
+- The engine's `description` names `/harness` as the primary entry (skill auto-trigger demoted to a
+  backstop); the generated `CLAUDE.md` tells tasks to start with `/harness`. Both engine copies
+  (embedded Template A + `templates/harness-engineering.SKILL.md.template`) kept in sync.
+- **Engine template marker bumped 0.7.0 → 0.8.0**, and harness-init's reconcile gained a
+  **v0.7.x → v0.8.0** rule (add the testresults Phase-6 output, name `/harness` as the primary
+  entry) — so an existing project upgrades its stamped engine by re-running `harness-init`. The
+  global `/harness` command and `db-guard` hook are NOT stamped per-project; they arrive via
+  `/plugin marketplace update` + `/reload-plugins`.
+- Plugin version 0.7.0 → 0.8.0; marketplace + plugin descriptions now mention the command and hook.
+
 ## [0.7.0] - 2026-06-15
 ### Added
 - **Decompose phase (engine Phase 1.5).** Between Intake and the spec gate, the engine now turns a

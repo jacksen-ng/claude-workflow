@@ -1,6 +1,6 @@
 # Requirement — Slash-command orchestration + delete-guard
 
-- **Status:** approved <!-- draft | approved | implemented | superseded -->
+- **Status:** implemented <!-- draft | approved | implemented | superseded -->
 - **Spec:** 001-slash-command-orchestration
 
 ## Problem / why now

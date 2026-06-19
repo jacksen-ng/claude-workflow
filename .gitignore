@@ -1,0 +1,3 @@
+# Python bytecode caches (e.g. from compiling the hook scripts)
+__pycache__/
+*.py[cod]
