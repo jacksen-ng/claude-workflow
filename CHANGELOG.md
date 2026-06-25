@@ -5,6 +5,33 @@ All notable changes to the `harness-kit` plugin. Format follows
 and the `version` in `plugins/harness-kit/.claude-plugin/plugin.json` gates updates —
 bump it whenever you add an entry here.
 
+## [0.9.0] - 2026-06-25
+### Added
+- **`harness-entry` hook (per-project, Template H).** A `UserPromptSubmit` hook that routes new
+  requirements into the loop: on each prompt it runs a cheap pre-filter (stays quiet on pure
+  questions and clearly trivial edits) and, for anything that looks like real dev work, injects a
+  routing rubric so the model runs `/harness` for a new requirement and handles a trivial fix
+  directly. It does NOT classify intent itself (sh cannot read meaning) — ambiguous input is treated
+  as a requirement. First **sh-native** hook (bash + jq), bash-3.2 / BSD-grep safe.
+- **`spec-gate` hook (per-project, Template I).** A `PreToolUse` hook on `Edit`/`Write`/`MultiEdit` —
+  the hard floor under harness-entry's reminder. It allows edits to spec/doc/machinery paths, and for
+  code files allows the edit only while a `docs/specs/*/requirement.md` is `approved` and not yet
+  `implemented`; otherwise it returns an "ask". New code can't silently skip the spec gate; a
+  genuinely trivial fix is one keystroke. Together H (route, soft) + I (block, hard) are the two-layer
+  "new requirement → must go through the loop; simple bug → handle directly" enforcement.
+### Changed
+- **`db-guard` ported from Python to sh** (`hooks/db-guard.py` → `hooks/db-guard.sh`). Same matcher
+  set and "ask" behavior, now bash + jq — faster hot-path startup, no interpreter dependency,
+  bash-3.2 / BSD-grep safe (`\b`/`\s` emulated portably), and **fail-closed** if jq is missing.
+  `hooks.json` now points at the sh.
+- **harness-init reconcile gained a v0.9.0 hooks rule** — a bootstrapped project missing
+  `harness-entry.sh` / `spec-gate.sh` is proposed the new hooks on re-run (existing hooks KEPT).
+  harness-init now stamps **four** enforcement hooks.
+- Added a root `CLAUDE.md` to this repo (it ships the plugin but was never itself bootstrapped):
+  thin always-on rules + the sh-hook / two-engine-copy / atomic-release invariants.
+- Plugin version 0.8.0 → 0.9.0. Engine template marker unchanged at 0.8.0 (no engine change here —
+  the orchestrator-engine work is tracked separately under spec 002).
+
 ## [0.8.0] - 2026-06-19
 ### Added
 - **`/harness` command (deterministic loop entry).** A plugin-global slash command — type

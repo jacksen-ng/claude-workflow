@@ -1,13 +1,13 @@
 ---
 name: harness-init
-description: Bootstrap a project to use the docs-driven harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates the full context layer into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine with recall/retrospect learning, self-contained) plus its LESSONS.md failure map and decomposition-rubric.md, (2) a thin CLAUDE.md (always-on rules + decision boundary + routing table), (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template, (4) spec-doc templates under docs/specs/ for the mandatory five-doc gate (requirement / design / implementation / testing / fallback), and (5) enforcement hooks (install-guard, retrospect-guard). If the repo already has skills, a CLAUDE.md, or docs, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
+description: Bootstrap a project to use the docs-driven harness workflow. Run ONCE in a repo (new or existing) when the user wants to "set up my workflow here", "初始化工作流", "scaffold CLAUDE.md and skills", or start a new project with their standard harness. It explores the repo to learn the real stack and structure, then generates the full context layer into the repo — (1) a project-local `harness-engineering` orchestrator skill (the closed-loop engine with recall/retrospect learning, self-contained) plus its LESSONS.md failure map and decomposition-rubric.md, (2) a thin CLAUDE.md (always-on rules + decision boundary + routing table), (3) one domain skill per natural surface (frontend / backend / infra / data / db / …) following the proven snapshot + ground-truth-anchors template, (4) spec-doc templates under docs/specs/ for the mandatory five-doc gate (requirement / design / implementation / testing / fallback), and (5) enforcement hooks (install-guard, retrospect-guard, a harness-entry router that forces new requirements through /harness, and a spec-gate that blocks code edits with no approved spec). If the repo already has skills, a CLAUDE.md, or docs, it first inventories and reconciles them against the live code — keeping what matches, proposing updates for what drifted, adding what is missing — instead of overwriting. Presents everything for review before finalizing. Complements `/dev-init` (file/folder scaffold) — this lays down the *context layer*, not the directory tree.
 ---
 
 # Harness Init — Project Bootstrapper
 
 One-shot setup that stamps the user's reusable workflow onto a repo. The goal: after running this, the repo is **self-contained** — it has its own local `harness-engineering` orchestrator that runs the docs-driven closed loop (spec gate → implement → verify → retrospect), learns from its own failures via LESSONS.md, and routes to thin per-domain skills, exactly like the user's mature projects, without depending on any global skill.
 
-This is the **context layer** (a local orchestrator + LESSONS.md + decomposition rubric + CLAUDE.md + domain skills + spec-doc templates + two enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
+This is the **context layer** (a local orchestrator + LESSONS.md + decomposition rubric + CLAUDE.md + domain skills + spec-doc templates + four enforcement hooks). It complements `/dev-init`, which lays down the directory tree, Docker, and devlog scaffold. If the repo is greenfield with no structure yet, suggest running `/dev-init` first (or alongside).
 
 **Key model:** the engine lives **in each project**, not globally. This plugin ships the *generator* (this skill) and the *templates* for the engine; running it drops a tailored `harness-engineering` into the repo. There is no global orchestrator — each project owns its own. (Two pieces *are* plugin-global and NOT stamped per-project: the `/harness` command — the deterministic entry that loads whatever local engine it finds — and the `db-guard` delete-safety hook. harness-init neither generates nor reconciles those.)
 
@@ -46,7 +46,7 @@ Skip on a fresh repo (no existing skills — everything is simply "new"). Otherw
 | A code surface with no skill yet | **NEW** — generate a domain skill |
 | A skill for a surface no longer in the code | **FLAG** — list it, do NOT delete; ask the user |
 
-**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. A **v0.6.x engine** additionally lacks the v0.7.0 **Phase 1.5 (Decompose)**: **UPDATE (propose)** — add the Decompose phase, write the new `decomposition-rubric.md` next to the engine, and add the **Impact map** section to `requirement.md`. A **v0.7.x engine** additionally lacks the v0.8.0 pieces: **UPDATE (propose)** — record test runs into `testresults.md` at Phase 6 (and stamp the new `_templates/testresults.md` skeleton), and name `/harness` as the primary entry in the engine description and the generated `CLAUDE.md` (skill auto-trigger stays a backstop). The `/harness` command and the `db-guard` hook are plugin-global — they arrive via `/plugin marketplace update`, NOT via this per-project stamp. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
+**Also reconcile the engine itself.** If `harness-engineering` already exists, diff its referenced `/slash-command` names and its template version marker (see Template A) against what the plugin currently ships. A reference to a renamed or removed skill (e.g. a stale `/vibe-coding`) is **UPDATE (propose)** — it is a dead link, fix it. A **v0.5.x or older engine** lacks the v0.6.0 mechanisms and is an **UPDATE (propose)** listing exactly these six deltas: the five-doc spec gate (Phase 2), the `/grill-me` clarity gate (Phase 1), Recall/Retrospect + LESSONS.md (Phases 0/9), the circuit breaker, the Decision boundary (CLAUDE.md §4), and the retrospect-guard hook. A **v0.6.x engine** additionally lacks the v0.7.0 **Phase 1.5 (Decompose)**: **UPDATE (propose)** — add the Decompose phase, write the new `decomposition-rubric.md` next to the engine, and add the **Impact map** section to `requirement.md`. A **v0.7.x engine** additionally lacks the v0.8.0 pieces: **UPDATE (propose)** — record test runs into `testresults.md` at Phase 6 (and stamp the new `_templates/testresults.md` skeleton), and name `/harness` as the primary entry in the engine description and the generated `CLAUDE.md` (skill auto-trigger stays a backstop). A project on the **v0.9.0** plugin additionally lacks the requirement-forcing enforcement hooks — regardless of engine marker, if `.claude/hooks/harness-entry.sh` (Template H) or `.claude/hooks/spec-gate.sh` (Template I) is absent, **UPDATE (propose)**: stamp it and merge its `UserPromptSubmit` / `PreToolUse` entry into `.claude/settings.json` (spec-gate is a second `PreToolUse` entry alongside install-guard; existing hooks are KEPT). The `/harness` command and the `db-guard` hook are plugin-global — they arrive via `/plugin marketplace update`, NOT via this per-project stamp. An existing `LESSONS.md` or populated `docs/specs/` is a project asset: **KEEP** its content; only the surrounding machinery is upgraded.
 
 This step only decides; it writes nothing.
 
@@ -64,7 +64,7 @@ Show one consolidated plan: the prefix; **KEEP** (list), **UPDATE** (list + what
 - **Failure map** → if `.claude/skills/harness-engineering/LESSONS.md` is absent, stamp the Template E skeleton. If present, it is a project asset — keep every entry; never regenerate.
 - **CLAUDE.md** → if absent, write a thin one from Template B (routing table = the reconciled skills); if present, apply only the approved merge — do not overwrite.
 - **Spec layer** → if `docs/specs/` is absent, stamp Template G (`docs/specs/README.md` + the `_templates/` skeletons). If the repo already has an equivalent spec convention, reconcile: reuse its structure, map it in the engine's Phase 2 wording, don't impose a duplicate.
-- **Hooks** → write `.claude/hooks/install-guard.py` (Template D) and `.claude/hooks/retrospect-guard.py` (Template F), and **merge** their `PreToolUse` / `Stop` entries into `.claude/settings.json` (merge into existing settings, never clobber). Ensure `.claude/state/` is listed in `.gitignore` (appending to an existing `.gitignore` is a proposed edit). Skip either hook if the project already has an equivalent one.
+- **Hooks** → write `.claude/hooks/install-guard.py` (Template D), `.claude/hooks/retrospect-guard.py` (Template F), `.claude/hooks/harness-entry.sh` (Template H), and `.claude/hooks/spec-gate.sh` (Template I); **merge** their `PreToolUse` / `Stop` / `UserPromptSubmit` entries into `.claude/settings.json` (merge into existing settings, never clobber — install-guard and spec-gate are two separate entries in the same `PreToolUse` array). Ensure `.claude/state/` is listed in `.gitignore` (appending to an existing `.gitignore` is a proposed edit). Skip any hook the project already has an equivalent of.
 - **UPDATE skills** → apply the approved, targeted edits only (fix the stale anchors/claims) — never a full rewrite.
 - **KEEP / FLAG** → leave untouched.
 
@@ -572,6 +572,203 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+## Template H — harness-entry hook (`.claude/hooks/harness-entry.sh` + settings merge)
+
+The teeth behind "every requirement enters the loop": a `UserPromptSubmit` hook runs on each prompt
+and, when the input looks like real development work, injects a routing directive so a NEW requirement
+is forced through `/harness` (the docs-driven loop) instead of being coded ad-hoc. It does **not**
+classify intent itself — sh cannot read meaning. It does a cheap pre-filter (stays quiet on pure
+questions and clearly trivial edits) and hands the new-requirement-vs-trivial-fix call to the model;
+**ambiguous → injects (treat as a requirement)**. The injection is a reminder, not a hard block — the
+hard "no code before an approved spec" floor is a separate `PreToolUse` spec-gate (not yet stamped).
+This is the project's first **sh-native** hook (jq for JSON); install-guard/retrospect-guard are still
+Python — port them to match when convenient.
+
+**1. Merge into `.claude/settings.json`** (merge — do not overwrite an existing `hooks` block):
+
+```json
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/harness-entry.sh\"",
+            "timeout": 10,
+            "statusMessage": "Routing to harness…"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**2. Write `.claude/hooks/harness-entry.sh`:**
+
+```bash
+#!/usr/bin/env bash
+# UserPromptSubmit hook: route new requirements into the harness-engineering loop.
+#
+# Reads the UserPromptSubmit JSON on stdin and decides whether to INJECT a routing directive
+# (stdout on exit 0 is appended to the prompt as context). It does NOT classify intent itself —
+# sh cannot read meaning. It runs a cheap pre-filter (stay quiet on pure questions and clearly
+# trivial edits) and, for anything that looks like real dev work, injects a rubric so the MODEL
+# makes the new-requirement-vs-trivial-fix call. Ambiguous → inject (treat as a requirement).
+#
+# Portability: macOS system bash 3.2 + BSD grep, POSIX ERE only. jq reads the prompt; if jq is
+# missing we inject anyway (over-reminding is safe; under-reminding silently loses the gate).
+# CJK keywords are matched as raw substrings (ASCII word boundaries are unreliable across locales
+# for multibyte text); ASCII keywords use a [^[:alnum:]_] boundary; question words only count at
+# the START of a line (so "figure out why" / "the X is broken" are not misread as questions).
+set -u
+
+input=$(cat)
+if command -v jq >/dev/null 2>&1; then
+  prompt=$(printf '%s' "$input" | jq -r '.prompt // empty' 2>/dev/null)
+else
+  prompt=""
+fi
+
+inject() {
+  cat <<'EOF'
+[harness-entry] This input is in a harness-bootstrapped repo. Route it (you classify — sh cannot):
+  • NEW requirement / feature / behavior change / non-trivial refactor → you MUST run /harness now
+    (the docs-driven harness-engineering loop); do NOT edit code before the spec gate.
+  • Genuinely trivial (typo, rename, comment, an obvious one-line bug fix) → proceed directly; say so.
+  • Unsure → treat it as a requirement and run /harness.
+  • Already inside the harness loop for this task → just continue; do not restart it.
+Dead rules still apply: per-action approval for every git action and every delete.
+EOF
+}
+
+[ -z "$prompt" ] && { inject; exit 0; }
+
+padded=" $prompt "
+B='[^[:alnum:]_]'
+REQ_ASCII='(implement|build|create|add|design|refactor|rewrite|integrate|migrate|feature|requirement|endpoint)'
+TRIV_ASCII='(typo|rename|lint|format|comment|wording|one-?line)'
+REQ_CJK='新功能|新需求|需求|实现|新增|重构|重写|集成|功能|接口|做一个|做个|加一个|加个'
+TRIV_CJK='错别字|重命名|改名|格式化|注释|文案|措辞|小修|小改|微调'
+QUES_CJK='为什么|什么|怎么|如何|是不是|能不能|可以吗|吗|多少|哪些|哪个|哪里'
+
+ascii() { printf '%s' "$padded" | grep -Eiq "${B}$1${B}"; }
+cjk()   { printf '%s' "$prompt" | grep -Eq "$1"; }
+is_question() {
+  printf '%s' "$prompt" | grep -Eq '\?|？' && return 0
+  printf '%s' "$prompt" | grep -Eiq '^[[:space:]]*(how|what|why|when|where|which|who|can|could|is|are|does|do|should)[[:space:]]' && return 0
+  cjk "$QUES_CJK" && return 0
+  return 1
+}
+
+if ascii "$REQ_ASCII" || cjk "$REQ_CJK"; then inject; exit 0; fi          # clear requirement → force
+if ascii "$TRIV_ASCII" || cjk "$TRIV_CJK" || is_question; then exit 0; fi # trivial / pure question → quiet
+inject; exit 0                                                            # ambiguous dev work → as requirement
+```
+
+`bash` + `jq` are assumed present (jq missing → it injects rather than failing open). The keyword
+lists are meant to be tuned per project — add the repo's own vocabulary to `REQ_*` / `TRIV_*`.
+
+## Template I — spec-gate hook (`.claude/hooks/spec-gate.sh` + settings merge)
+
+The **hard floor** under Template H's reminder: a `PreToolUse` hook on `Edit`/`Write`/`MultiEdit`
+that blocks code edits when no approved spec is in flight. Where Template H *reminds* the model to
+route, this *stops* it from silently coding without a spec. It always allows edits to spec/doc/
+machinery paths (you must be able to author the spec), and for any other (code) file it allows the
+edit ONLY while a `docs/specs/*/requirement.md` has Status `approved` and not yet `implemented` (the
+implementation window). Otherwise it returns **ask** — a genuinely trivial fix is one keystroke; a
+new requirement is rejected and routed through `/harness`. (Tune the allowlist `case` arms to the
+repo's layout; switch the decision from `ask` to a hard `deny` if you want zero code-without-spec.)
+
+**1. Merge into `.claude/settings.json`** (merge — append to the existing `PreToolUse` array, do
+not overwrite install-guard's entry):
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/spec-gate.sh\"",
+            "timeout": 10,
+            "statusMessage": "Checking spec gate…"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**2. Write `.claude/hooks/spec-gate.sh`:**
+
+```bash
+#!/usr/bin/env bash
+# PreToolUse hook: spec-gate — no production code before an approved spec (the hard floor).
+#
+# Fires on Edit/Write/MultiEdit. Always allows edits to spec/doc/machinery paths (you must be able
+# to author the spec itself). For any other (code) path it allows the edit ONLY while a spec is in
+# its implementation window — a docs/specs/*/requirement.md whose Status value is `approved` and not
+# yet `implemented`. Otherwise it returns "ask": a trivial fix is one keystroke, a new requirement
+# gets rejected and routed through /harness.
+#
+# Portability: macOS system bash 3.2 + BSD grep/sed, POSIX ERE only; jq reads the JSON. Fail closed:
+# jq missing → ask rather than silently allow. NOTE: the Status line carries an enum comment
+# (<!-- draft | approved | implemented | superseded -->) — strip it before reading the value.
+set -u
+
+input=$(cat)
+
+if ! command -v jq >/dev/null 2>&1; then
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"spec-gate could not run (jq not found). Confirm this code edit is covered by an approved spec."}}'
+  exit 0
+fi
+
+tool=$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null)
+case "$tool" in
+  Edit|Write|MultiEdit) ;;
+  *) exit 0 ;;
+esac
+
+file=$(printf '%s' "$input" | jq -r '.tool_input.file_path // empty' 2>/dev/null)
+[ -n "$file" ] || exit 0
+
+# 1. Always allow authoring specs/docs + harness machinery.
+case "$file" in
+  */docs/specs/*|docs/specs/*) exit 0 ;;
+  */.claude/*|.claude/*)       exit 0 ;;
+  *.md|*.mdx|*.txt|*.rst)      exit 0 ;;
+  */.gitignore|.gitignore|*/LICENSE|LICENSE) exit 0 ;;
+esac
+
+# 2. Code edit → allow only while a spec is in its implementation window (approved, not implemented).
+proj="${CLAUDE_PROJECT_DIR:-.}"
+active=""
+for req in "$proj"/docs/specs/*/requirement.md; do
+  [ -f "$req" ] || continue
+  line=$(grep -iE '\*\*status:?\*\*' "$req" | head -1)
+  val=$(printf '%s' "$line" | sed -E 's/<!--.*//')   # drop the enum comment, keep the real value
+  printf '%s' "$val" | grep -iqw 'approved'    || continue
+  printf '%s' "$val" | grep -iqw 'implemented' && continue
+  active="$req"; break
+done
+
+[ -n "$active" ] && exit 0    # implementing an approved spec → allow
+
+# 3. No active approved spec → ask.
+reason="🚧 spec-gate: editing code ($file) but no approved spec is in its implementation window. New behavior needs an approved docs/specs/<NNN>/ set (harness Phase 2) — run /harness; the user approves before code. If this is a genuinely trivial fix (typo, rename, one-line bug), approve to proceed."
+jq -nc --arg r "$reason" \
+  '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"ask",permissionDecisionReason:$r}}'
+exit 0
+```
+
+Together, Templates H + I are the two-layer enforcement: H *routes* new requirements to `/harness`
+(soft, model classifies), I *blocks* code that skipped the spec gate (hard, file-state checked).
 
 ## Template G — spec docs (`docs/specs/README.md` + `docs/specs/_templates/`)
 
